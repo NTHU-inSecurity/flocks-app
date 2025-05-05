@@ -13,7 +13,7 @@ module Flocks
 
     def call(username:, password:)
       response = HTTP.post("#{@config.API_URL}/auth/authenticate",
-                           json: { username:, password: })
+                           json: { email:, password: })
 
       raise(UnauthorizedError) unless response.code == 200
 
