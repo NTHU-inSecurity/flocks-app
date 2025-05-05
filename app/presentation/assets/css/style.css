@@ -1,0 +1,24 @@
+/* Custom styles for Flocks app */
+h1,
+h2,
+h3,
+h4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.nav-link {
+  font-weight: 500;
+}
+
+.dropdown-menu {
+  margin-top: 0.5rem;
+}
+
+.alert {
+  margin-top: 1rem;
+}
+
+.btn {
+  font-weight: 500;
+}
