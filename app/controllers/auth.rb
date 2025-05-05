@@ -4,7 +4,7 @@ require 'roda'
 require_relative './app'
 
 module Flocks
-  # Web controller for Credence API
+  # Web controller for Flocks API
   class App < Roda
     route('auth') do |routing|
       @login_route = '/auth/login'
