@@ -17,7 +17,7 @@ module Flocks
         # POST /auth/login
         routing.post do
           account = AuthenticateAccount.new(App.config).call(
-            username: routing.params['email'],
+            email: routing.params['email'],
             password: routing.params['password']
           )
 

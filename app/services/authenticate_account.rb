@@ -11,7 +11,7 @@ module Flocks
       @config = config
     end
 
-    def call(username:, password:)
+    def call(email:, password:)
       response = HTTP.post("#{@config.API_URL}/auth/authenticate",
                            json: { email:, password: })
 
