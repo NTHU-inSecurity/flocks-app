@@ -22,6 +22,7 @@ module Flocks
           )
 
           session[:current_account] = account
+          puts(session[:current_account])
           flash[:notice] = "Welcome back to Flocks!"
           routing.redirect '/'
         rescue StandardError
