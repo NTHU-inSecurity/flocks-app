@@ -1,0 +1,15 @@
+h1 Welcome to Flocks
+p This app allows you to share your location with friends and family in real-time.
+  
+p
+  i Create flocks (groups) and share locations with your trusted contacts.
+
+- unless current_account
+  p 
+    a href='/auth/login' class="btn btn-primary" Login to start!
+    a href='/auth/register' class="btn btn-outline-primary ms-2" Register
+- else
+  p
+    a href='#' class="btn btn-primary" My Flocks
+    a href='#' class="btn btn-outline-primary ms-2" Create New Flock
+    a href='/map' class="btn btn-primary" Test Map
