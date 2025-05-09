@@ -1,0 +1,11 @@
+h1 Create a New Flock
+
+/ TODO: Replace this form with a styled layout and validations
+- if flash[:error]
+  p.error = flash[:error]
+
+form action="/flock/create" method="post"
+  label for="destination_url" Destination URL:
+  input type="text" name="destination_url" id="destination_url" required
+  br
+  input type="submit" value="Create Flock"
