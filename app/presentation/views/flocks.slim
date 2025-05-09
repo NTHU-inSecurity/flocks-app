@@ -1,0 +1,10 @@
+h1 All Flocks
+
+/ TODO: Replace this temporary view with a styled layout and interactive features
+- if flocks.empty?
+  p No flocks found.
+- else
+  ul
+    - flocks.each do |flock|
+      li
+        pre = JSON.pretty_generate(flock)
