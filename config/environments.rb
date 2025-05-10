@@ -1,9 +1,15 @@
 # frozen_string_literal: true
 
+require 'delegate'
 require 'roda'
 require 'figaro'
 require 'logger'
+require 'rack/ssl-enforcer'
 require 'rack/session'
+require 'rack/session/redis'
+require_relative '../require_app'
+
+require_app('lib')
 
 module Flocks
   # Configuration for the API
