@@ -9,9 +9,9 @@ module Flocks
         @api_url = config.API_URL
       end
 
-      def call(destination_url:)
+      def call(email, destination_url:)
         response = HTTP.post(
-          "#{@api_url}/flocks",
+          "#{@api_url}/flocks?email=#{email}",
           json: { destination_url: destination_url }
         )
 

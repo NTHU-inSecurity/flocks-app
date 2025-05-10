@@ -9,8 +9,8 @@ module Flocks
             @api_url = config.API_URL
           end
       
-          def all
-            response = HTTP.get("#{@api_url}/flocks")
+          def all(email)
+            response = HTTP.get("#{@api_url}/flocks?email=#{email}")
             raise 'Could not retrieve flocks' unless response.code == 200
       
             response.parse['data']
