@@ -24,11 +24,6 @@ module Flocks
     Figaro.load
     def self.config = Figaro.env
 
-    # Session configuration
-    ONE_MONTH = 30 * 24 * 60 * 60
-    use Rack::Session::Pool,
-        expire_after: ONE_MONTH
-
     # HTTP Request logging
     configure :development, :production do
       plugin :common_logger, $stdout
@@ -38,18 +33,41 @@ module Flocks
     LOGGER = Logger.new($stderr)
     def self.logger = LOGGER
 
-    configure :development, :test do
-      logger.level = Logger::ERROR
-    end
+    # Session configuration
+    ONE_MONTH = 30 * 24 * 60 * 60
+    @redis_url = ENV.delete('REDISCLOUD_URL')
+    SecureMessage.setup(ENV.delete('MSG_KEY'))
+    SecureSession.setup(@redis_url) # only used in dev to wipe session store
 
-    # Console/Pry configuration
     configure :development, :test do
+      # Suppresses log info/warning outputs in dev/test environments
+      logger.level = Logger::ERROR
+
+      # use Rack::Session::Cookie,
+      #     expire_after: ONE_MONTH, secret: config.SESSION_SECRET
+
+      use Rack::Session::Pool,
+          expire_after: ONE_MONTH
+
+      # use Rack::Session::Redis,
+      #     expire_after: ONE_MONTH,
+      #     redis_server: @redis_url
+
+      # Allows binding.pry to be used in development
       require 'pry'
 
       # Allows running reload! in pry to restart entire app
       def self.reload!
         exec 'pry -r ./spec/test_load_all'
       end
+    end
+
+    configure :production do
+      use Rack::SslEnforcer, hsts: true
+
+      use Rack::Session::Redis,
+          expire_after: ONE_MONTH,
+          redis_server: @redis_url
     end
   end
 end
