@@ -21,7 +21,7 @@ module Flocks
             password: routing.params['password']
           )
 
-          session[:current_account] = account
+          SecureSession.new(session).set(:current_account, account)
           puts(session[:current_account])
           flash[:notice] = "Welcome back to Flocks!"
           routing.redirect '/'
@@ -34,7 +34,8 @@ module Flocks
 
       routing.on 'logout' do
         routing.get do
-          session[:current_account] = nil
+          SecureSession.new(session).delete(:current_account)
+          flash[:notice] = "You've been logged out"
           routing.redirect @login_route
         end
       end

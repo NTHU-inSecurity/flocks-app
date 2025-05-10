@@ -20,9 +20,8 @@ module Flocks
 
     # Session configuration
     ONE_MONTH = 30 * 24 * 60 * 60
-    use Rack::Session::Cookie,
-        expire_after: ONE_MONTH,
-        secret: config.SESSION_SECRET
+    use Rack::Session::Pool,
+        expire_after: ONE_MONTH
 
     # HTTP Request logging
     configure :development, :production do
