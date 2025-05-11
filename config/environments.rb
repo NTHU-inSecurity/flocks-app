@@ -4,6 +4,7 @@ require 'roda'
 require 'figaro'
 require 'logger'
 require 'rack/session'
+require 'rack/ssl-enforcer'
 
 module Flocks
   # Configuration for the API
@@ -45,6 +46,9 @@ module Flocks
       def self.reload!
         exec 'pry -r ./spec/test_load_all'
       end
+    end
+    configure :production do
+      use Rack::SSLEnforcer, hsts: true
     end
   end
 end
