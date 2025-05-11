@@ -1,26 +1,120 @@
+h1 class="mt-4 mb-4 d-flex justify-content-between align-items-center"
+  span Location Map
+  div class="btn-group"
+    button type="button" id="refreshLocation" class="btn btn-sm btn-outline-primary"
+      i class="bi bi-geo-alt-fill me-1"
+      | My Location
+    button type="button" id="shareLocation" class="btn btn-sm btn-outline-success"
+      i class="bi bi-share me-1"
+      | Share
+
+div class="card shadow-sm mb-4"
+  div class="card-body p-0"
+    div id="map" style="height: 600px; width: 100%; border-radius: 4px;"
+    
+  div class="card-footer bg-light small"
+    div class="d-flex justify-content-between"
+      div
+        | Latitude: 
+        span id="currentLat" --
+        |  Longitude: 
+        span id="currentLng" --
+      div
+        | Updated: 
+        span id="lastUpdate" --
+
 link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"
-#map style="height: 500px;"
 script src="https://unpkg.com/leaflet/dist/leaflet.js"
+
 script
   |
     document.addEventListener('DOMContentLoaded', function() {
       var map = L.map('map').setView([51.5, -0.09], 13);
+      
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
-
-      var marker = L.marker([0, 0]).addTo(map);
-
+      
+      var marker = L.marker([51.5, -0.09]).addTo(map);
+      var circle = L.circle([51.5, -0.09], {
+        color: 'blue',
+        fillColor: '#3388ff',
+        fillOpacity: 0.2,
+        radius: 500
+      }).addTo(map);
+      
+      var latDisplay = document.getElementById('currentLat');
+      var lngDisplay = document.getElementById('currentLng');
+      var lastUpdateDisplay = document.getElementById('lastUpdate');
+      var refreshBtn = document.getElementById('refreshLocation');
+      var shareBtn = document.getElementById('shareLocation');
+      
       function updateLocation(position) {
         var lat = position.coords.latitude;
         var lng = position.coords.longitude;
+        var accuracy = position.coords.accuracy;
+        
         marker.setLatLng([lat, lng]);
-        map.setView([lat, lng], 13);
+        circle.setLatLng([lat, lng]);
+        circle.setRadius(accuracy);
+        map.setView([lat, lng], 15);
+        
+        latDisplay.textContent = lat.toFixed(6);
+        lngDisplay.textContent = lng.toFixed(6);
+        lastUpdateDisplay.textContent = new Date().toLocaleTimeString();
       }
-
+      
       if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(updateLocation);
+        navigator.geolocation.getCurrentPosition(updateLocation, 
+          function(error) {
+            alert('Error getting location: ' + error.message);
+          }, 
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        );
+        
+        var watchId = navigator.geolocation.watchPosition(updateLocation);
       } else {
         alert('Geolocation is not supported by this browser.');
+      }
+      
+      refreshBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(updateLocation);
+        }
+      });
+      
+      shareBtn.addEventListener('click', function() {
+        if (latDisplay.textContent !== '--' && lngDisplay.textContent !== '--') {
+          var lat = parseFloat(latDisplay.textContent);
+          var lng = parseFloat(lngDisplay.textContent);
+          var shareUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+          
+          if (navigator.share) {
+            navigator.share({
+              title: 'My Location',
+              text: 'Check out my current location!',
+              url: shareUrl
+            }).catch(err => {
+              copyToClipboard(shareUrl);
+            });
+          } else {
+            copyToClipboard(shareUrl);
+          }
+        }
+      });
+      
+      function copyToClipboard(text) {
+        const el = document.createElement('textarea');
+        el.value = text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        alert('Location URL copied to clipboard!');
       }
     });

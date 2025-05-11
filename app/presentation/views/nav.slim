@@ -1,25 +1,20 @@
+link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
 nav role="navigation" class="navbar navbar-expand-sm navbar-dark bg-primary"
   div class="container-fluid"
     a class="navbar-brand" rel="home" href="/" title="Location Sharing App"
-        img alt="Flocks" src="/logo.png" style="max-width:35px; margin-top: -7px;"
-    a class="navbar-brand" href="/" Flocks
+        img alt="Flocks" src="/logo.png" style="max-width:35px; margin-top: -7px; margin-right: 8px;"
+        span style="font-family: 'Press Start 2P', 'VT323', monospace; letter-spacing: 1px; text-transform: uppercase;" Flocks
+    
     button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation"
       span class="navbar-toggler-icon"
 
     div class="collapse navbar-collapse" id="mainNavbar"
-      ul class="navbar-nav me-auto"
+      ul class="navbar-nav ms-auto"
         - if @current_account
-          li class="nav-item"
-            a class="nav-link" href="/" Flocks
           li class="nav-item dropdown"
             a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"
               = "#{@current_account['email']}"
 
-            div class="dropdown-menu"
+            div class="dropdown-menu dropdown-menu-end"
               a class="dropdown-item" href="/account/#{@current_account['email']}" Account
               a class="dropdown-item" href='/auth/logout' Logout
-        - else
-          li class="nav-item"
-            a class="nav-link" href='/auth/login' Login
-          li class="nav-item"
-            a class="nav-link" href='/auth/register' Register
