@@ -56,7 +56,7 @@ h1 class="mb-4" All Flocks
                   i class="bi bi-three-dots-vertical"
                 ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton-#{flock["attributes"]["id"]}"
                   li
-                    a class="dropdown-item" href="/flock/#{flock["attributes"]["id"]}/share" 
+                    a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#shareModal-#{flock["attributes"]["id"]}"
                       i class="bi bi-share me-2"
                       | Share
                   li
@@ -70,6 +70,40 @@ h1 class="mb-4" All Flocks
                       i class="bi bi-trash me-2"
                       | Delete
 
+            / Share Modal
+            div.modal.fade id="shareModal-#{flock['attributes']['id']}" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true"
+              div.modal-dialog
+                div.modal-content
+                  div.modal-header
+                    h5.modal-title id="shareModalLabel" Share Flock Link
+                    button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
+                  div.modal-body
+                    div.mb-3
+                      label.form-label for="shareLinkInput-#{flock['attributes']['id']}" Link
+                      input.form-control id="shareLinkInput-#{flock['attributes']['id']}" type="text" readonly=true value="#{request.base_url}/flock/share/#{flock['attributes']['id']}"
+                    div.text-end
+                      button.btn.btn-primary type="button" onclick="copyShareLink('#{flock['attributes']['id']}')"
+                        i.bi.bi-clipboard.me-1
+                        | Copy Link
+
   a href="/flock/create" class="btn btn-success mb-4"
-    i class="bi bi-plus-circle "
+    i class="bi bi-plus-circle"
     | Create New Flock
+
+/ JavaScript to handle copy
+script
+  |
+    function copyShareLink(flockId) {
+      const input = document.getElementById(`shareLinkInput-${flockId}`);
+      if (!input) return;
+
+      // Fallback for HTTP/localhost
+      try {
+        input.select();
+        input.setSelectionRange(0, 99999); // mobile-safe
+        document.execCommand('copy');
+        console.log("Copied via execCommand:", input.value);
+      } catch (err) {
+        console.error("Copy failed:", err);
+      }
+    }
