@@ -1,0 +1,38 @@
+h2.text-center.mb-4 Share Flock
+
+- if flock["attributes"]
+  div.card.shadow-sm
+    div.card-body
+      h5.card-title
+        i.bi.bi-geo-alt-fill.me-2.text-primary
+        | Destination
+      p.card-text = flock["attributes"]["destination_url"]
+
+      div.text-muted.small.mt-2
+        strong ID:
+        span.text-monospace = flock["attributes"]["id"]
+
+    div.card-footer.text-end
+      button.btn.btn-primary type="button" data-bs-toggle="modal" data-bs-target="#joinFlockModal"
+        i.bi.bi-person-plus.me-1
+        | Join Flock
+- else
+  div.alert.alert-danger
+    | Flock could not be found.
+
+/ Modal to enter username before joining
+div.modal.fade id="joinFlockModal" tabindex="-1" aria-labelledby="joinFlockModalLabel" aria-hidden="true"
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h5.modal-title id="joinFlockModalLabel" Enter Username
+        button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
+      div.modal-body
+        form method="post" action="/flock/#{flock["attributes"]["id"]}/join"
+          div.mb-3
+            label.form-label for="usernameInput" Username
+            input.form-control id="usernameInput" name="username" type="text" required
+          div.text-end
+            button.btn.btn-success type="submit"
+              i.bi.bi-check-circle.me-1
+              | Join
