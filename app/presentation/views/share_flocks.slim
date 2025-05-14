@@ -28,7 +28,7 @@ div.modal.fade id="joinFlockModal" tabindex="-1" aria-labelledby="joinFlockModal
         h5.modal-title id="joinFlockModalLabel" Enter Username
         button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
       div.modal-body
-        form method="post" action="/flock/#{flock["attributes"]["id"]}/join"
+        form method="post" action="/flock/join/#{flock["attributes"]["id"]}"
           div.mb-3
             label.form-label for="usernameInput" Username
             input.form-control id="usernameInput" name="username" type="text" required
