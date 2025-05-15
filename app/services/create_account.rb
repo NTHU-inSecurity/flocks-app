@@ -11,8 +11,8 @@ module Flocks
       @config = config
     end
 
-    def call(email:, password:)
-      message = { email:,
+    def call(username:, password:)
+      message = { username:,
                   password: }
 
       response = HTTP.post(

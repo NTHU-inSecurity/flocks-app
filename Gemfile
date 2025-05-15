@@ -29,13 +29,6 @@ gem 'base64'
 # Debugging
 gem 'pry'
 
-# Communication
-gem 'http'
-
-# Security
-gem 'rack-ssl-enforcer'
-gem 'rbnacl' # assumes libsodium package already installed
-
 # Development
 group :development do
   gem 'rubocop'

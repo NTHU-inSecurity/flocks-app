@@ -18,7 +18,7 @@ module Flocks
         # POST /auth/login
         routing.post do
           account = AuthenticateAccount.new(App.config).call(
-            email: routing.params['email'],
+            username: routing.params['username'],
             password: routing.params['password']
           )
 
@@ -26,7 +26,7 @@ module Flocks
           flash[:notice] = "Welcome back to Flocks!"
           routing.redirect '/'
         rescue AuthenticateAccount::UnauthorizedError
-          flash.now[:error] = 'Email and password did not match our records'
+          flash.now[:error] = 'username and password did not match our records'
           response.status = 400
           view :login
         rescue AuthenticateAccount::ApiServerError => e

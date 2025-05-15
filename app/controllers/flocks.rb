@@ -8,7 +8,7 @@ module Flocks
     route('flock') do |routing|
       # GET /flock/all
       routing.is 'all' do
-        flocks = FlocksServices::GetFlocks.new(App.config).all(@current_account['email'])
+        flocks = FlocksServices::GetFlocks.new(App.config).call(@current_account['username'])
         view :flocks, locals: { flocks:, current_account: @current_account }
       end
 
@@ -20,7 +20,7 @@ module Flocks
 
         routing.post do
           destination_url = routing.params['destination_url']
-          new_flock = FlocksServices::CreateFlock.new(App.config).call(@current_account['email'], destination_url:)
+          new_flock = FlocksServices::CreateFlock.new(App.config).call(@current_account['username'], destination_url:)
 
           flash[:notice] = 'Flock created successfully'
           routing.redirect '/flock/all'
