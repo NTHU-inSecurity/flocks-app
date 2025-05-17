@@ -8,7 +8,7 @@ module Flocks
     route('flock') do |routing|
       # GET /flock/all
       routing.is 'all' do
-        flocks = FlocksServices::GetFlocks.new(App.config).call(@current_account['username'])
+        flocks = FlocksServices::GetFlocks.new(App.config).all
         view :flocks, locals: { flocks:, current_account: @current_account }
       end
 
