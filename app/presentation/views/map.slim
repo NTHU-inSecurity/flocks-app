@@ -1,120 +1,79 @@
-h1 class="mt-4 mb-4 d-flex justify-content-between align-items-center"
+/ Page Title and Buttons
+h1.mt-4.mb-4.d-flex.justify-content-between.align-items-center
   span Location Map
-  div class="btn-group"
-    button type="button" id="refreshLocation" class="btn btn-sm btn-outline-primary"
-      i class="bi bi-geo-alt-fill me-1"
+  .btn-group
+    button#refreshLocation.btn.btn-sm.btn-outline-primary type="button"
+      i.bi.bi-geo-alt-fill.me-1
       | My Location
-    button type="button" id="shareLocation" class="btn btn-sm btn-outline-success"
-      i class="bi bi-share me-1"
+    button#shareLocation.btn.btn-sm.btn-outline-success type="button"
+      i.bi.bi-share.me-1
       | Share
 
-div class="card shadow-sm mb-4"
-  div class="card-body p-0"
-    div id="map" style="height: 600px; width: 100%; border-radius: 4px;"
-    
-  div class="card-footer bg-light small"
-    div class="d-flex justify-content-between"
+/ Map Container
+.card.shadow-sm.mb-4
+  .card-body.p-0
+    #map style="height: 600px; width: 100%; border-radius: 4px;"
+  .card-footer.bg-light.small
+    .d-flex.justify-content-between
       div
         | Latitude: 
-        span id="currentLat" --
-        |  Longitude: 
-        span id="currentLng" --
+        span#currentLat --
+        | Longitude: 
+        span#currentLng --
       div
         | Updated: 
-        span id="lastUpdate" --
+        span#lastUpdate --
 
-link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"
-script src="https://unpkg.com/leaflet/dist/leaflet.js"
+/ Leaflet CSS and JS
+link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 
 script
+  | const birds = #{{ birds.to_json }};
+
+/ JavaScript logic
+script
   |
-    document.addEventListener('DOMContentLoaded', function() {
-      var map = L.map('map').setView([51.5, -0.09], 13);
-      
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
-      
-      var marker = L.marker([51.5, -0.09]).addTo(map);
-      var circle = L.circle([51.5, -0.09], {
-        color: 'blue',
-        fillColor: '#3388ff',
-        fillOpacity: 0.2,
-        radius: 500
-      }).addTo(map);
-      
-      var latDisplay = document.getElementById('currentLat');
-      var lngDisplay = document.getElementById('currentLng');
-      var lastUpdateDisplay = document.getElementById('lastUpdate');
-      var refreshBtn = document.getElementById('refreshLocation');
-      var shareBtn = document.getElementById('shareLocation');
-      
-      function updateLocation(position) {
-        var lat = position.coords.latitude;
-        var lng = position.coords.longitude;
-        var accuracy = position.coords.accuracy;
-        
-        marker.setLatLng([lat, lng]);
-        circle.setLatLng([lat, lng]);
-        circle.setRadius(accuracy);
-        map.setView([lat, lng], 15);
-        
-        latDisplay.textContent = lat.toFixed(6);
-        lngDisplay.textContent = lng.toFixed(6);
-        lastUpdateDisplay.textContent = new Date().toLocaleTimeString();
-      }
-      
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(updateLocation, 
-          function(error) {
-            alert('Error getting location: ' + error.message);
-          }, 
-          {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
-          }
-        );
-        
-        var watchId = navigator.geolocation.watchPosition(updateLocation);
-      } else {
-        alert('Geolocation is not supported by this browser.');
-      }
-      
-      refreshBtn.addEventListener('click', function() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(updateLocation);
-        }
-      });
-      
-      shareBtn.addEventListener('click', function() {
-        if (latDisplay.textContent !== '--' && lngDisplay.textContent !== '--') {
-          var lat = parseFloat(latDisplay.textContent);
-          var lng = parseFloat(lngDisplay.textContent);
-          var shareUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+    document.addEventListener('DOMContentLoaded', () => {
+          const map = L.map('map').setView([24.79, 120.98], 13);
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+
+          const current_bird = #{{ bird.to_json }};
           
-          if (navigator.share) {
-            navigator.share({
-              title: 'My Location',
-              text: 'Check out my current location!',
-              url: shareUrl
-            }).catch(err => {
-              copyToClipboard(shareUrl);
+          // Plot other users
+          birds.forEach(entry => {
+            const user = entry.data.attributes;
+            const account = entry.included.account.attributes
+            const popup = `<b>${account.username}</b><br>${user.message}<br>`;
+            L.marker([user.latitude, user.longitude]).addTo(map).bindPopup(popup);
+          });
+
+          // Send current location to backend
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+              const lat = pos.coords.latitude;
+              const lng = pos.coords.longitude;
+
+              // Send to backend
+              try {
+                const response = await fetch('/map', {
+                  method: 'POST', // or 'PATCH' depending on your backend
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ flock_id: current_bird.flock_id, bird_id: current_bird.bird_id, latitude: lat, longitude: lng, message: 'here' })
+                });
+
+                if (!response.ok) throw new Error('Failed to update location');
+              } catch (err) {
+                console.error(err);
+                alert('Could not update your location');
+              }
             });
-          } else {
-            copyToClipboard(shareUrl);
           }
-        }
-      });
-      
-      function copyToClipboard(text) {
-        const el = document.createElement('textarea');
-        el.value = text;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        alert('Location URL copied to clipboard!');
-      }
-    });
+
+        });
