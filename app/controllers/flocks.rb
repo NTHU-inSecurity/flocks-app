@@ -12,6 +12,20 @@ module Flocks
         view :flocks, locals: { flocks:, current_account: @current_account }
       end
 
+      # GET /flock/share/[ID]
+      routing.on 'share', String do |flock_id|
+        begin
+          flock_data = FlocksServices::GetFlockID.new(App.config).call(flock_id)
+
+          view :share_flocks, locals: { flock: flock_data, current_account: @current_account }
+
+        rescue StandardError => e
+          flash[:error] = e.message
+          response.status = 400
+          routing.redirect '/'
+        end
+      end
+      
       # GET and POST /flock/create
       routing.is 'create' do
         routing.get do
