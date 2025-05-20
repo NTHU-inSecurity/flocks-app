@@ -17,17 +17,23 @@ module Flocks
 
         # POST /auth/login
         routing.post do
-          account = AuthenticateAccount.new(App.config).call(
+          account_info = AuthenticateAccount.new(App.config).call(
             username: routing.params['username'],
             password: routing.params['password']
           )
 
-          SecureSession.new(session).set(:current_account, account)
-          flash[:notice] = "Welcome back to Flocks!"
+          current_account = Account.new(
+            account_info[:account],
+            account_info[:auth_token]
+          )
+
+          CurrentSession.new(session).current_account = current_account
+
+          flash[:notice] = "Welcome back #{current_account.username}!"
           routing.redirect '/'
         rescue AuthenticateAccount::UnauthorizedError
-          flash.now[:error] = 'username and password did not match our records'
-          response.status = 400
+          flash.now[:error] = 'Username and password did not match our records'
+          response.status = 401
           view :login
         rescue AuthenticateAccount::ApiServerError => e
           App.logger.warn "API server error: #{e.inspect}\n#{e.backtrace}"
