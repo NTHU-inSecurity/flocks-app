@@ -1,75 +1,121 @@
-h1 class="mb-4" All Flocks
+h1.mb-4 All Flocks
 
 - if flocks.empty?
-  div class="card shadow-sm"
-    div class="card-body text-center py-5"
-      p class="text-muted mb-4" No flocks found.
-      a href="/flock/create" class="btn btn-success"
-        i class="bi bi-plus-circle me-2"
+  div.card.shadow-sm
+    div.card-body.text-center.py-5
+      p.text-muted.mb-4 No flocks found.
+      a.btn.btn-success href="/flock/create"
+        i.bi.bi-plus-circle.me-2
         | Create New Flock
 - else
-  div class="row row-cols-1 row-cols-md-2 g-4 mb-4"
+  div.row.row-cols-1.row-cols-md-2.g-4.mb-4
     - flocks.each do |flock|
-      div class="col"
-        div class="card h-100 shadow-sm hover-shadow"
-          div class="card-body"
-            h5 class="card-title mb-3" 
-              i class="bi bi-geo-alt-fill me-2 text-primary"
+      div.col
+        div.card.h-100.shadow-sm.hover-shadow
+          div.card-body
+            h5.card-title.mb-3 
+              i.bi.bi-geo-alt-fill.me-2.text-primary
               | Flock
-            div class="card-text"
+            div.card-text
               - if flock["attributes"] && flock["attributes"]["destination_url"]
-                div class="mb-3"
-                  div class="text-muted mb-1 small" Destination:
-                  a href="#{flock["attributes"]["destination_url"]}" class="d-block text-truncate" target="_blank"
+                div.mb-3
+                  div.text-muted.mb-1.small Destination:
+                  a.d-block.text-truncate href="#{flock["attributes"]["destination_url"]}" target="_blank"
                     = flock["attributes"]["destination_url"]
-                    i class="bi bi-box-arrow-up-right ms-1 small"
-              
+                    i.bi.bi-box-arrow-up-right.ms-1.small
+
               - if flock["attributes"] && flock["attributes"]["id"]
                 div
-                  div class="text-muted mb-1 small" ID:
-                  div class="text-truncate small text-monospace"
-                    = flock["attributes"]["id"]
-                
+                  div.text-muted.mb-1.small ID:
+                  div.text-truncate.small.text-monospace = flock["attributes"]["id"]
+
               - if flock["birds"] && !flock["birds"].empty?
-                hr class="my-3"
+                hr.my-3
                 div
-                  div class="d-flex justify-content-between align-items-center mb-2"
-                    div class="text-muted small" People:
-                    span class="badge bg-primary rounded-pill" = flock["birds"].size
-                  
-                  div class="list-group list-group-flush small"
+                  div.d-flex.justify-content-between.align-items-center.mb-2
+                    div.text-muted.small People:
+                    span.badge.bg-primary.rounded-pill = flock["birds"].size
+
+                  div.list-group.list-group-flush.small
                     - flock["birds"].each do |bird|
-                      div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center"
+                      div.list-group-item.px-0.py-2.d-flex.justify-content-between.align-items-center
                         div
-                          strong = bird["username"] 
+                          strong = bird["username"]
                           - if bird["message"] && !bird["message"].empty?
-                            p class="text-muted mb-0 mt-1" = bird["message"]
+                            p.text-muted.mb-0.mt-1 = bird["message"]
                         - if bird["estimated_time"]
-                          span class="badge bg-light text-dark" #{format_time(bird["estimated_time"])}
-                
-          div class="card-footer bg-transparent"
-            div class="d-flex justify-content-between align-items-center"
-              a href="/map?flock_id=#{flock["attributes"]["id"]}" class="btn btn-sm btn-outline-primary" View Details
-              
-              div class="dropdown"
-                button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownMenuButton-#{flock["attributes"]["id"]}" data-bs-toggle="dropdown" aria-expanded="false"
-                  i class="bi bi-three-dots-vertical"
-                ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton-#{flock["attributes"]["id"]}"
+                          span.badge.bg-light.text-dark #{format_time(bird["estimated_time"])}
+
+          div.card-footer.bg-transparent
+            div.d-flex.justify-content-between.align-items-center
+              a.btn.btn-sm.btn-outline-primary href="/map?flock_id=#{flock["attributes"]["id"]}" View Details
+
+              div.dropdown
+                button.btn.btn-sm.btn-light.dropdown-toggle type="button" id="dropdownMenuButton-#{flock["attributes"]["id"]}" data-bs-toggle="dropdown" aria-expanded="false"
+                  i.bi.bi-three-dots-vertical
+                ul.dropdown-menu.dropdown-menu-end aria-labelledby="dropdownMenuButton-#{flock["attributes"]["id"]}"
                   li
-                    a class="dropdown-item" href="/flock/#{flock["attributes"]["id"]}/share" 
-                      i class="bi bi-share me-2"
+                    a.dropdown-item href="#" data-bs-toggle="modal" data-bs-target="#shareModal-#{flock["attributes"]["id"]}"
+                      i.bi.bi-share.me-2
                       | Share
                   li
-                    a class="dropdown-item" href="/flock/#{flock["attributes"]["id"]}/edit"
-                      i class="bi bi-pencil me-2"
+                    a.dropdown-item href="/flock/#{flock["attributes"]["id"]}/edit"
+                      i.bi.bi-pencil.me-2
                       | Edit
                   li
-                    hr class="dropdown-divider"
+                    hr.dropdown-divider
                   li
-                    a class="dropdown-item text-danger" href="/flock/#{flock["attributes"]["id"]}/delete" data-confirm="Are you sure you want to delete this flock?"
-                      i class="bi bi-trash me-2"
+                    a.dropdown-item.text-danger href="/flock/#{flock["attributes"]["id"]}/delete" data-confirm="Are you sure you want to delete this flock?"
+                      i.bi.bi-trash.me-2
                       | Delete
 
-  a href="/flock/create" class="btn btn-success mb-4"
-    i class="bi bi-plus-circle "
-    | Create New Flock
+        / Share Modal (outside card-body/footer but inside each card loop)
+        div.modal.fade id="shareModal-#{flock['attributes']['id']}" tabindex="-1" aria-labelledby="shareModalLabel-#{flock['attributes']['id']}" aria-hidden="true"
+          div.modal-dialog
+            div.modal-content
+              div.modal-header
+                h5.modal-title id="shareModalLabel-#{flock['attributes']['id']}" Share Flock Link
+                button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
+              div.modal-body
+                div.mb-3
+                  label.form-label for="shareLinkInput-#{flock['attributes']['id']}" Link
+                  input.form-control id="shareLinkInput-#{flock['attributes']['id']}" type="text" readonly=true value="#{request.base_url}/flock/share/#{flock['attributes']['id']}"
+                div.text-end
+                  button.btn.btn-primary type="button" onclick="copyShareLink('#{flock['attributes']['id']}')"
+                    i.bi.bi-clipboard.me-1
+                    | Copy Link
+
+/ Global Create Button
+a.btn.btn-success.mb-4 href="/flock/create"
+  i.bi.bi-plus-circle
+  | Create New Flock
+
+/ Toast container (only once)
+div.toast-container.position-fixed.bottom-0.end-0.p-3
+  div.toast id="copyToast" role="alert" aria-live="assertive" aria-atomic="true"
+    div.toast-header
+      strong.me-auto Copied
+      small.text-muted Just now
+      button.btn-close type="button" data-bs-dismiss="toast" aria-label="Close"
+    div.toast-body
+      Link copied to clipboard ✅
+
+/ JS to handle copy + toast
+script
+  |
+    function copyShareLink(flockId) {
+      const input = document.getElementById(`shareLinkInput-${flockId}`);
+      if (!input) return;
+
+      input.select();
+      input.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+
+        const toastEl = document.getElementById('copyToast');
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+      } catch (err) {
+        console.error("Copy failed:", err);
+      }
+    }
