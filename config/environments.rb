@@ -33,6 +33,8 @@ module Flocks
     LOGGER = Logger.new($stderr)
     def self.logger = LOGGER
 
+    require 'pry'
+
     # Session configuration
     ONE_MONTH = 30 * 24 * 60 * 60
     @redis_url = ENV.delete('REDISCLOUD_URL')
@@ -53,9 +55,7 @@ module Flocks
       #     expire_after: ONE_MONTH,
       #     redis_server: @redis_url
 
-      # Allows binding.pry to be used in development
-      require 'pry'
-
+      
       # Allows running reload! in pry to restart entire app
       def self.reload!
         exec 'pry -r ./spec/test_load_all'

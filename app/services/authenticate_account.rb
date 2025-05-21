@@ -3,34 +3,29 @@
 require 'http'
 
 module Flocks
-  # Error for invalid credentials
-  class UnauthorizedError < StandardError
-    def initialize(msg = nil)
-      super
-      @credentials = msg
-    end
-
-    def message
-      if @credentials && @credentials[:username]
-        "Invalid Credentials for: #{@credentials[:username]}"
-      else
-        'Invalid Authorization Token'
-      end
-    end
-  end
-
-  # Find account and check password
+  # Returns an authenticated user, or nil
   class AuthenticateAccount
-    def self.call(credentials)
-      if credentials[:auth_token]
-        account = Account.first(auth_token: credentials[:auth_token])
-        account || raise
-      else
-        account = Account.first(username: credentials[:username])
-        account.password?(credentials[:password]) ? account : raise
-      end
-    rescue StandardError
-      raise UnauthorizedError, credentials
+    class UnauthorizedError < StandardError; end
+
+    class ApiServerError < StandardError; end
+
+    def initialize(config)
+      @config = config
+    end
+
+    def call(username:, password:)
+      response = HTTP.post("#{@config.API_URL}/auth/authenticate",
+                           json: { username:, password: })
+
+      raise(UnauthorizedError) if response.code == 403
+      raise(ApiServerError) if response.code != 200
+
+      account_info = JSON.parse(response.to_s)['attributes']
+
+      { account: account_info['account']['attributes'],
+        auth_token: account_info['auth_token'] }
+    rescue HTTP::ConnectionError
+      raise ApiServerError
     end
   end
 end

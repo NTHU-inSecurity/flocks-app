@@ -3,7 +3,7 @@ h1 Welcome to Flocks
 p
   i Create flocks and share locations with your friends and family in real-time.
 
-- unless current_account
+- unless current_account.logged_in?
   p 
     a href='/auth/login' class="btn btn-primary me-3" Login to start!
     a href='/auth/register' class="btn btn-primary me-3" Register

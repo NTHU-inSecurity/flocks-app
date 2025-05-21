@@ -3,6 +3,8 @@
 require 'roda'
 require 'slim'
 
+require_relative '../models/current_session'
+
 module Flocks
   # Base class for Flocks Web Application
   class App < Roda

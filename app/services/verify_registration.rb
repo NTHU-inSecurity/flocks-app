@@ -2,7 +2,7 @@
 
 require 'http'
 
-module Credence
+module Flocks
   # Returns an authenticated user, or nil
   class VerifyRegistration
     class VerificationError < StandardError; end

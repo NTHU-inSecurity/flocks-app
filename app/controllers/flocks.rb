@@ -8,7 +8,7 @@ module Flocks
     route('flock') do |routing|
       # GET /flock/all
       routing.is 'all' do
-        flocks = FlocksServices::GetFlocks.new(App.config).all
+        flocks = FlocksServices::GetFlocks.new(App.config).call(@current_account)
         view :flocks, locals: { flocks:, current_account: @current_account }
       end
 
@@ -42,18 +42,6 @@ module Flocks
         end
       end
 
-      # GET /flock/my - current_account flocks
-      routing.is 'my' do
-        unless @current_account&.logged_in?
-          flash[:error] = 'please login first'
-          routing.redirect '/auth/login'
-        end
-
-        flocks = FlocksServices::GetUserFlocks.new(App.config)
-                                              .call(@current_account)
-        view :my_flocks, locals: { flocks:, current_account: @current_account }
-      end
-
       # GET and POST /flock/create
       routing.is 'create' do
         routing.get do
@@ -61,15 +49,16 @@ module Flocks
         end
 
         routing.post do
+          # ASK: WHY check if logged in??
           unless @current_account&.logged_in?
-            flash[:error] = '請先登入來創建新資源'
+            flash[:error] = 'Please register first'
             routing.redirect '/auth/login'
           end
 
           destination_url = routing.params['destination_url']
+
           new_flock = FlocksServices::CreateFlock.new(App.config).call(
-            destination_url:,
-            current_account: @current_account
+            destination_url, @current_account
           )
 
           flash[:notice] = 'Flock created successfully'

@@ -6,14 +6,17 @@ module Flocks
   class FlocksServices
     class CreateFlock
       def initialize(config)
-        @api_url = config.API_URL
+        @config = config
       end
 
-      def call(username, destination_url:)
-        response = HTTP.post(
-          "#{@api_url}/flocks?username=#{username}",
-          json: { destination_url: destination_url }
-        )
+      def call(destination_url, current_account)
+
+        puts(current_account.auth_token)
+
+        response = HTTP.auth("Bearer #{current_account.auth_token}")
+                   .post("#{@config.API_URL}/flocks", json: { destination_url: destination_url })
+
+        #response.code == 201 ? JSON.parse(response.to_s)['data'] : nil
 
         raise 'Could not create flock' unless response.code == 201
 
