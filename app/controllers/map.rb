@@ -15,7 +15,7 @@ module Flocks
           )
 
           # FIX: controller knows too much
-          bird = birds.find { |b| b['included']['account']['attributes']['username'] == @current_account['username'] }
+          bird = birds.find { |b| b['included']['account']['attributes']['username'] == @current_account.username }
           current_bird = { flock_id: bird['included']['flock']['attributes']['id'],
                            bird_id: bird['data']['attributes']['id']}
 
