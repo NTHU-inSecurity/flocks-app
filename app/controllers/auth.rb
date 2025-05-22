@@ -47,7 +47,7 @@ module Flocks
       @logout_route = '/auth/logout'
       routing.on 'logout' do
         routing.get do
-          SecureSession.new(session).delete(:current_account)
+          CurrentSession.new(session).delete
           flash[:notice] = "You've been logged out"
           routing.redirect @login_route
         end

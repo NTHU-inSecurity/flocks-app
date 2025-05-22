@@ -28,7 +28,7 @@ module Flocks
       routing.on 'join', String do |flock_id|
         routing.post do
           begin
-            username = @current_account['username']
+            username = @current_account.username
             FlocksServices::JoinFlock.new(App.config).call(
               flock_id: flock_id,
               username: username

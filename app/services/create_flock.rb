@@ -10,9 +10,6 @@ module Flocks
       end
 
       def call(destination_url, current_account)
-
-        puts(current_account.auth_token)
-
         response = HTTP.auth("Bearer #{current_account.auth_token}")
                    .post("#{@config.API_URL}/flocks", json: { destination_url: destination_url })
 

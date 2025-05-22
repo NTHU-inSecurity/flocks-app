@@ -18,6 +18,10 @@ module Flocks
       @account_info ? @account_info['email'] : nil
     end
 
+    def created_at
+      @account_info['created_at']
+    end
+
     def logged_out?
       @account_info.nil?
     end
