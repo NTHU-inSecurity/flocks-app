@@ -55,7 +55,6 @@ module Flocks
       #     expire_after: ONE_MONTH,
       #     redis_server: @redis_url
 
-      
       # Allows running reload! in pry to restart entire app
       def self.reload!
         exec 'pry -r ./spec/test_load_all'

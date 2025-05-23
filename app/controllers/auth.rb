@@ -3,7 +3,6 @@
 require 'roda'
 require_relative './app'
 
-
 module Flocks
   # Web controller for Flocks API
   class App < Roda
@@ -83,7 +82,7 @@ module Flocks
         routing.get(String) do |registration_token|
           flash.now[:notice] = 'Email Verified! Please choose a new password'
           new_account = SecureMessage.new(registration_token).decrypt
-          
+
           view :register_confirm,
                locals: { new_account:,
                          registration_token: }

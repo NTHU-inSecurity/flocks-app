@@ -25,7 +25,7 @@ end
 
 desc 'Run rubocop to check style'
 task style: [:spec] do
-  sh 'rubocop .'
+  sh 'rubocop -A .'
 end
 
 desc 'Update vulnerabilities lit and audit gems'
@@ -34,7 +34,7 @@ task :audit do
 end
 
 desc 'Checks for release'
-task release: [:spec, :style, :audit] do
+task release: %i[spec style audit] do
   puts "\nReady for release!"
 end
 
@@ -71,4 +71,3 @@ namespace :session do
     puts "#{wiped.count} sessions deleted"
   end
 end
-# rubocop:enable Style/HashSyntax

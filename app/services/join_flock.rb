@@ -24,7 +24,7 @@ module Flocks
           }
         )
 
-        raise "Could not join flock: #{response.body.to_s}" unless response.code == 201
+        raise "Could not join flock: #{response.body}" unless response.code == 201
 
         response.parse['data']
       end

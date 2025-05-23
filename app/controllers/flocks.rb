@@ -14,31 +14,27 @@ module Flocks
 
       # GET /flock/share/[ID]
       routing.on 'share', String do |flock_id|
-        begin
-          flock_data = FlocksServices::GetFlockID.new(App.config).call(flock_id)
-          view :share_flocks, locals: { flock: flock_data, current_account: @current_account }
-        rescue StandardError => e
-          flash[:error] = e.message
-          response.status = 400
-          routing.redirect '/'
-        end
+        flock_data = FlocksServices::GetFlockID.new(App.config).call(flock_id)
+        view :share_flocks, locals: { flock: flock_data, current_account: @current_account }
+      rescue StandardError => e
+        flash[:error] = e.message
+        response.status = 400
+        routing.redirect '/'
       end
 
       # POST /flock/join/[id]
       routing.on 'join', String do |flock_id|
         routing.post do
-          begin
-            username = @current_account.username
-            FlocksServices::JoinFlock.new(App.config).call(
-              flock_id: flock_id,
-              username: username
-            )
-            flash[:notice] = 'You have successfully joined the flock!'
-            routing.redirect "/flock/share/#{flock_id}"
-          rescue StandardError => e
-            flash[:error] = "Could not join the flock: #{e.message}"
-            routing.redirect '/'
-          end
+          username = @current_account.username
+          FlocksServices::JoinFlock.new(App.config).call(
+            flock_id: flock_id,
+            username: username
+          )
+          flash[:notice] = 'You have successfully joined the flock!'
+          routing.redirect "/flock/share/#{flock_id}"
+        rescue StandardError => e
+          flash[:error] = "Could not join the flock: #{e.message}"
+          routing.redirect '/'
         end
       end
 
@@ -57,7 +53,7 @@ module Flocks
 
           destination_url = routing.params['destination_url']
 
-          new_flock = FlocksServices::CreateFlock.new(App.config).call(
+          FlocksServices::CreateFlock.new(App.config).call(
             destination_url, @current_account
           )
 
