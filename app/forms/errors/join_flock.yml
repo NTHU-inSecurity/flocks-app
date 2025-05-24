@@ -1,0 +1,12 @@
+en:
+  errors:
+    username: "Please enter a valid username (letters, numbers, dots, and underscores only)"
+    username_format: "Username contains invalid characters"
+    username_length: "Username must be at least 2 characters long"
+    message: "Message is too long (maximum 200 characters)"
+    latitude: "Please enter a valid latitude (-90 to 90 degrees)"
+    longitude: "Please enter a valid longitude (-180 to 180 degrees)"
+    coordinates_required: "Both latitude and longitude must be provided together"
+    location_invalid: "Please provide valid coordinates"
+    estimated_time: "Estimated time must be a positive number (in seconds)"
+    estimated_time_negative: "Estimated time cannot be negative"
