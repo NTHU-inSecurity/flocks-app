@@ -1,79 +1,57 @@
-/ Page Title and Buttons
-h1.mt-4.mb-4.d-flex.justify-content-between.align-items-center
-  span Location Map
-  .btn-group
-    button#refreshLocation.btn.btn-sm.btn-outline-primary type="button"
-      i.bi.bi-geo-alt-fill.me-1
-      | My Location
-    button#shareLocation.btn.btn-sm.btn-outline-success type="button"
-      i.bi.bi-share.me-1
-      | Share
-
-/ Map Container
 .card.shadow-sm.mb-4
   .card-body.p-0
     #map style="height: 600px; width: 100%; border-radius: 4px;"
-  .card-footer.bg-light.small
-    .d-flex.justify-content-between
-      div
-        | Latitude: 
-        span#currentLat --
-        | Longitude: 
-        span#currentLng --
-      div
-        | Updated: 
-        span#lastUpdate --
 
 / Leaflet CSS and JS
 link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 
-script
-  | const birds = #{{ birds.to_json }};
+/ Include Faye client script
+script src="http://localhost:3000/faye/faye.js"
 
-/ JavaScript logic
 script
   |
     document.addEventListener('DOMContentLoaded', () => {
-          const map = L.map('map').setView([24.79, 120.98], 13);
+      const map = L.map('map').setView([24.79, 120.98], 13);
+      const userMarkers = {};
+      const channel = "#{{ flock_id }}";
+      const current_bird = #{{ bird.to_json }};
 
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
-          }).addTo(map);
+      const client = new Faye.Client("http://localhost:3000/faye");
 
-          const current_bird = #{{ bird.to_json }};
-          
-          // Plot other users
-          birds.forEach(entry => {
-            const user = entry.data.attributes;
-            const account = entry.included.account.attributes
-            const popup = `<b>${account.username}</b><br>${user.message}<br>`;
-            L.marker([user.latitude, user.longitude]).addTo(map).bindPopup(popup);
-          });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
 
-          // Send current location to backend
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-              const lat = pos.coords.latitude;
-              const lng = pos.coords.longitude;
+      function updateMarker(id, name, msg, lat, lng) {
+        const popup = `<b>${name}</b><br>${msg}<br>`;
+        if (!userMarkers[id]) {
+          userMarkers[id] = L.marker([lat, lng]).addTo(map).bindPopup(popup);
+        } else {
+          userMarkers[id].setLatLng([lat, lng]);
+          userMarkers[id].bindPopup(popup);
+        }
+      }
 
-              // Send to backend
-              try {
-                const response = await fetch('/map', {
-                  method: 'POST', // or 'PATCH' depending on your backend
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ flock_id: current_bird.flock_id, bird_id: current_bird.bird_id, latitude: lat, longitude: lng, message: 'here' })
-                });
-
-                if (!response.ok) throw new Error('Failed to update location');
-              } catch (err) {
-                console.error(err);
-                alert('Could not update your location');
-              }
-            });
-          }
-
+      client.subscribe(`/${channel}`, (birds) => {
+        console.log(birds)
+        birds.forEach(entry => {
+          const user = entry.data.attributes;
+          const account = entry.included.account.attributes;
+          updateMarker(user.id, account.username, user.message, user.latitude, user.longitude);
         });
+      });
+
+      navigator.geolocation.watchPosition((position) => {
+        fetch('/map', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ flock_id: channel, 
+                                 bird_id: current_bird.bird_id, 
+                                 latitude: position.coords.latitude, 
+                                 longitude: position.coords.longitude, 
+                                 message: 'here' })
+        });
+      });
+    });
