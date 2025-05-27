@@ -54,25 +54,5 @@ script
                                  message: 'here' })
         });
       });
-    });              const lat = pos.coords.latitude;
-              const lng = pos.coords.longitude;
-
-              // Send to backend
-              try {
-                const response = await fetch('/map', {
-                  method: 'POST', // or 'PATCH' depending on your backend
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ flock_id: current_bird.flock_id, bird_id: current_bird.bird_id, latitude: lat, longitude: lng, message: 'here' })
-                });
-
-                if (!response.ok) throw new Error('Failed to update location');
-              } catch (err) {
-                console.error(err);
-                alert('Could not update your location');
-              }
-            });
-          }
-
-        });
+    });
+    
