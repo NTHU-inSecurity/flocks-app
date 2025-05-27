@@ -1,0 +1,12 @@
+en:
+  errors:
+    destination_url: "Please enter a valid destination URL"
+    username: "Please enter a valid username"
+    message: "Message is too long (maximum 200 characters)"
+    latitude: "Please enter a valid latitude"
+    longitude: "Please enter a valid longitude"
+    estimated_time: "Estimated time must be a positive number"
+    google_maps_url: "Please provide a valid Google Maps URL"
+    coordinates_required: "Both latitude and longitude must be provided together"
+    location_invalid: "Please provide valid coordinates"
+    update_required: "At least one field must be updated"

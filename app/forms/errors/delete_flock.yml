@@ -1,0 +1,11 @@
+en:
+  errors:
+    flock_id: "Please provide a valid flock ID"
+    invalid_format: "Flock ID format is invalid"
+    flock_not_found: "The specified flock could not be found"
+    confirmation_required: "Please confirm that you want to delete this flock"
+    confirmation_mismatch: 'Please type "delete" to confirm deletion'
+    confirm: "You must confirm deletion by checking the confirmation box"
+    unauthorized: "You are not authorized to delete this flock"
+    has_members: "Cannot delete flock with active members"
+    deletion_failed: "Failed to delete flock. Please try again."
