@@ -4,14 +4,14 @@ require 'http'
 
 module Flocks
   class FlocksServices
-    class CreateFlock
+    class CreateFlock # rubocop:disable Style/Documentation
       def initialize(config)
         @config = config
       end
 
       def call(destination_url, current_account)
         response = HTTP.auth("Bearer #{current_account.auth_token}")
-                       .post("#{@config.API_URL}/flocks", json: { destination_url: destination_url })
+                       .post("#{@config.API_URL}/flocks", json: { destination_url: })
 
         # response.code == 201 ? JSON.parse(response.to_s)['data'] : nil
 

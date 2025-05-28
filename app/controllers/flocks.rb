@@ -4,8 +4,8 @@ require 'roda'
 require_relative 'app'
 
 module Flocks
-  class App < Roda
-    route('flock') do |routing|
+  class App < Roda # rubocop:disable Style/Documentation
+    route('flock') do |routing| # rubocop:disable Metrics/BlockLength
       # GET /flock/all
       routing.is 'all' do
         flocks = FlocksServices::GetFlocks.new(App.config).call(@current_account)

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative './app'
+require_relative 'app'
 
 module Flocks
   # Web controller for Flocks API
@@ -53,7 +53,7 @@ module Flocks
       end
 
       @register_route = '/auth/register'
-      routing.on 'register' do
+      routing.on 'register' do # rubocop:disable Metrics/BlockLength
         routing.is do
           # GET /auth/register
           routing.get do

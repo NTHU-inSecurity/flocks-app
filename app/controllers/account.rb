@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative './app'
+require_relative 'app'
 
 module Flocks
   # Web controller for Flocks API
   class App < Roda
-    route('account') do |routing|
-      routing.on do
+    route('account') do |routing| # rubocop:disable Metrics/BlockLength
+      routing.on do # rubocop:disable Metrics/BlockLength
         # GET /account/
         routing.get String do |username|
           if @current_account && @current_account.username == username

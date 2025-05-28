@@ -4,7 +4,7 @@ require 'http'
 
 module Flocks
   class FlocksServices
-    class GetFlocks
+    class GetFlocks # rubocop:disable Style/Documentation
       def initialize(config)
         @config = config
       end
