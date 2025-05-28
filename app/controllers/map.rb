@@ -10,17 +10,18 @@ module Flocks
       routing.on do
         # GET /map
         routing.get do
-
           birds = FlocksServices::GetBirds.new(App.config).call(
+            current_account: @current_account,
             flock_id: routing.params['flock_id']
           )
-          
+
           # FIX: controller knows too much
           bird = birds.find { |b| b['included']['account']['attributes']['username'] == @current_account.username }
           current_bird = { flock_id: bird['included']['flock']['attributes']['id'],
                            bird_id: bird['data']['attributes']['id'] }
 
-          view :map, locals: { current_account: @current_account, flock_id: routing.params['flock_id'], bird: current_bird }
+          view :map,
+               locals: { current_account: @current_account, flock_id: routing.params['flock_id'], bird: current_bird }
         end
 
         # POST /map/
@@ -28,6 +29,7 @@ module Flocks
           data = JSON.parse(routing.body.read)
 
           FlocksServices::UpdateBird.new(App.config).call(
+            current_account: @current_account,
             flock_id: data['flock_id'],
             bird_id: data['bird_id'],
             latitude: data['latitude'],

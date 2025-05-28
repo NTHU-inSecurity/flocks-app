@@ -9,8 +9,9 @@ module Flocks
         @api_url = config.API_URL
       end
 
-      def call(flock_id:)
-        response = HTTP.get("#{@api_url}/flocks/#{flock_id}/birds")
+      def call(current_account:, flock_id:)
+        response = HTTP.auth("Bearer #{current_account.auth_token}")
+                       .get("#{@api_url}/flocks/#{flock_id}/birds")
         raise 'Could not retrieve birds data' unless response.code == 200
 
         response.parse['data']

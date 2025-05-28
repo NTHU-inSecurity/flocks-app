@@ -14,7 +14,8 @@ module Flocks
 
       # GET /flock/share/[ID]
       routing.on 'share', String do |flock_id|
-        flock_data = FlocksServices::GetFlockID.new(App.config).call(flock_id)
+        flock_data = FlocksServices::GetFlock.new(App.config).call(current_account: @current_account,
+                                                                   flock_id: flock_id)
         view :share_flocks, locals: { flock: flock_data, current_account: @current_account }
       rescue StandardError => e
         flash[:error] = e.message
@@ -25,13 +26,13 @@ module Flocks
       # POST /flock/join/[id]
       routing.on 'join', String do |flock_id|
         routing.post do
-          username = @current_account.username
+          @current_account.username
           FlocksServices::JoinFlock.new(App.config).call(
-            flock_id:,
-            username:
+            current_account: @current_account,
+            flock_id: flock_id
           )
           flash[:notice] = 'You have successfully joined the flock!'
-          routing.redirect "/flock/share/#{flock_id}"
+          routing.redirect '/flock/all'
         rescue StandardError => e
           flash[:error] = "Could not join the flock: #{e.message}"
           routing.redirect '/'

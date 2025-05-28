@@ -141,117 +141,22 @@ javascript:
 
         birds.forEach(entry => {
           const user = entry.data.attributes;
-          const account = entry.included?.account?.attributes;
-          
-          if (!account || !user.latitude || !user.longitude) return;
-
-          const isCurrentUser = account.username === currentBird?.username;
-          const icon = isCurrentUser ? currentUserIcon : userIcon;
-          
-          const popup = `
-            <div class="text-center">
-              <strong>${account.username}</strong><br>
-              <span class="text-muted">${user.message || 'No message'}</span>
-              ${user.estimated_time ? `<br><small class="text-success">ETA: ${formatTime(user.estimated_time)}</small>` : ''}
-            </div>
-          `;
-          
-          const marker = L.marker([user.latitude, user.longitude], { icon })
-            .addTo(map)
-            .bindPopup(popup);
-          
-          memberMarkers.push(marker);
-          
-          if (isCurrentUser) {
-            currentUserMarker = marker;
+          const account = entry.included.account.attributes;
+          if (user.latitude != null && user.longitude != null) {
+            updateMarker(user.id, account.username, user.message, user.latitude, user.longitude);
           }
         });
-      }
-
-      // Format time helper
-      function formatTime(seconds) {
-        const minutes = Math.round(seconds / 60);
-        return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-      }
-
-      // Update current location display
-      function updateLocationDisplay(lat, lng) {
-        document.getElementById('currentLat').textContent = lat.toFixed(6);
-        document.getElementById('currentLng').textContent = lng.toFixed(6);
-        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-      }
-
-      // Show toast notification
-      function showLocationToast() {
-        const toast = new bootstrap.Toast(document.getElementById('locationToast'));
-        toast.show();
-      }
-
-      // Get current location button
-      document.getElementById('refreshLocation').addEventListener('click', () => {
-        if (!navigator.geolocation) {
-          alert('Geolocation is not supported by this browser.');
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            
-            updateLocationDisplay(lat, lng);
-            map.setView([lat, lng], 15);
-            
-            if (currentUserMarker) {
-              currentUserMarker.setLatLng([lat, lng]);
-            }
-          },
-          (error) => {
-            alert('Unable to retrieve your location.');
-            console.error('Geolocation error:', error);
-          }
-        );
       });
 
-      // Share location button
-      document.getElementById('shareLocation').addEventListener('click', async () => {
-        if (!navigator.geolocation) {
-          alert('Geolocation is not supported by this browser.');
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-
-          try {
-            const response = await fetch('/map', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({ 
-                flock_id: currentBird.flock_id, 
-                bird_id: currentBird.bird_id, 
-                latitude: lat, 
-                longitude: lng, 
-                message: currentBird.message || 'Current location'
-              })
-            });
-
-            if (!response.ok) throw new Error('Failed to update location');
-            
-            updateLocationDisplay(lat, lng);
-            showLocationToast();
-            
-          } catch (err) {
-            console.error('Location update error:', err);
-            alert('Could not update your location. Please try again.');
-          }
-        }, (error) => {
-          alert('Unable to retrieve your location.');
-          console.error('Geolocation error:', error);
+      navigator.geolocation.watchPosition((position) => {
+        fetch('/map', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ flock_id: channel, 
+                                 bird_id: current_bird.bird_id, 
+                                 latitude: position.coords.latitude, 
+                                 longitude: position.coords.longitude, 
+                                 message: 'here' })
         });
       });
 
