@@ -11,11 +11,15 @@ module Flocks
 
       def call(flock_id:, bird_id:, latitude:, longitude:, message:)
         response = HTTP.post("#{@api_url}/flocks/#{flock_id}/birds/#{bird_id}",
-                             json: { message: message, latitude: latitude, longitude: longitude })
+                             json: {
+                               message:,
+                               latitude:,
+                               longitude:
+                             })
 
-        raise(UnauthorizedError) unless response.code == 200
+        raise('Could not update bird data') unless response.code == 200
 
-        response.parse['attributes']
+        response.parse
       end
     end
   end

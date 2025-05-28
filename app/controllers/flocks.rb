@@ -27,8 +27,8 @@ module Flocks
         routing.post do
           username = @current_account.username
           FlocksServices::JoinFlock.new(App.config).call(
-            flock_id: flock_id,
-            username: username
+            flock_id:,
+            username:
           )
           flash[:notice] = 'You have successfully joined the flock!'
           routing.redirect "/flock/share/#{flock_id}"
@@ -63,6 +63,38 @@ module Flocks
           flash.now[:error] = e.message
           response.status = 400
           view :create_flock, locals: { current_account: @current_account }
+        end
+      end
+
+      # PUT/POST /flock/[flock_id]/bird/[bird_id]/update
+      routing.on String do |flock_id|
+        routing.on 'bird', String do |bird_id|
+          routing.on 'update' do
+            routing.post do
+              unless @current_account&.logged_in?
+                flash[:error] = 'Please login first'
+                routing.redirect '/auth/login'
+              end
+
+              message = routing.params['message'] || ''
+              latitude = routing.params['latitude']&.to_f
+              longitude = routing.params['longitude']&.to_f
+
+              FlocksServices::UpdateBird.new(App.config).call(
+                flock_id:,
+                bird_id:,
+                latitude:,
+                longitude:,
+                message:
+              )
+
+              flash[:notice] = 'Message updated successfully!'
+              routing.redirect "/flock/share/#{flock_id}"
+            rescue StandardError => e
+              flash[:error] = "Could not update message: #{e.message}"
+              routing.redirect "/flock/share/#{flock_id}"
+            end
+          end
         end
       end
     end
