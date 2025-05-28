@@ -1,29 +1,76 @@
-div class="row"
-  div class="col-sm-3"
-  div class="col-sm-6"
-    form action="/account/#{registration_token}" method='post' id='user-form'
-      div class="form-group"
-        div class="row"
-          div class="col-sm-3" Username:
-          div class="col-sm-9"
-            == new_account['username']
-        div class="row"
-          div class="col-sm-3" Email:
-          div class="col-sm-9"
-            == new_account['email']
+h1.text-center.mb-4 Complete Registration
 
-      div class="form-group"
-        div class="row"
-          div class="col-sm-3"
-            label for='password_input' Password: 
-          div class="col-sm-9"
-            input type='password' name='password' id='password_input'
-      div class="form-group"
-        div class="row"
-          div class="col-sm-3"
-            label for='password_confirm_input' Re-enter Password: 
-          div class="col-sm-9"
-            input type='password' name='password_confirm' id='password_confirm_input'
+div.row.justify-content-center
+  div.col-md-6.col-lg-5
+    div.card.shadow-sm
+      div.card-header.bg-primary.text-white
+        h5.card-title.mb-0
+          i.bi.bi-person-check.me-2
+          | Confirm Your Account
+      
+      div.card-body
+        / Account Details Preview
+        div.alert.alert-info.mb-4
+          h6.alert-heading Account Details
+          div.row.mb-2
+            div.col-4
+              strong Username:
+            div.col-8
+              == new_account['username']
+          div.row
+            div.col-4
+              strong Email:
+            div.col-8
+              == new_account['email']
 
-      button type='submit' id='registration-form-submit' class='submit' value='submit' class="btn btn-primary" submit
-  div class="col-sm-3"
+        / Password Form
+        form action="/account/#{registration_token}" method='post' id='user-form'
+          div.mb-3
+            label.form-label for='password_input'
+              i.bi.bi-lock.me-1
+              | Password
+            input.form-control type='password' name='password' id='password_input' required=true placeholder="Enter your password"
+          
+          div.mb-4
+            label.form-label for='password_confirm_input'
+              i.bi.bi-lock-fill.me-1
+              | Confirm Password
+            input.form-control type='password' name='password_confirm' id='password_confirm_input' required=true placeholder="Re-enter your password"
+
+          div.d-grid
+            button.btn.btn-primary.btn-lg type='submit' id='registration-form-submit'
+              i.bi.bi-check-circle.me-2
+              | Complete Registration
+
+      div.card-footer.bg-light.text-center
+        small.text-muted
+          | Already have an account? 
+          a href="/auth/login" class="text-decoration-none" Sign in here
+
+javascript:
+  |
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('user-form');
+      const password = document.getElementById('password_input');
+      const passwordConfirm = document.getElementById('password_confirm_input');
+      
+      form.addEventListener('submit', function(e) {
+        if (password.value !== passwordConfirm.value) {
+          e.preventDefault();
+          alert('Passwords do not match!');
+          passwordConfirm.focus();
+        }
+      });
+      
+      passwordConfirm.addEventListener('input', function() {
+        if (password.value !== passwordConfirm.value) {
+          passwordConfirm.setCustomValidity('Passwords do not match');
+          passwordConfirm.classList.add('password-match-error');
+          passwordConfirm.classList.remove('password-match-success');
+        } else {
+          passwordConfirm.setCustomValidity('');
+          passwordConfirm.classList.add('password-match-success');
+          passwordConfirm.classList.remove('password-match-error');
+        }
+      });
+    });

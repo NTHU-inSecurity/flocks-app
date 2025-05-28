@@ -22,3 +22,44 @@ h4 {
 .btn {
   font-weight: 500;
 }
+
+/* Map page custom markers */
+.custom-marker {
+  background: #fff;
+  border: 2px solid #007bff;
+  border-radius: 50%;
+  color: #007bff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.current-user-marker {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.user-marker:hover,
+.current-user-marker:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Hover effects for cards */
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Password confirmation styling */
+.password-match-error {
+  border-color: #dc3545;
+}
+
+.password-match-success {
+  border-color: #28a745;
+}

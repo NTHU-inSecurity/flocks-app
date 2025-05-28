@@ -1,79 +1,268 @@
-/ Page Title and Buttons
-h1.mt-4.mb-4.d-flex.justify-content-between.align-items-center
-  span Location Map
-  .btn-group
-    button#refreshLocation.btn.btn-sm.btn-outline-primary type="button"
+/ Page Header
+div.d-flex.justify-content-between.align-items-center.mb-4
+  h1.mb-0
+    i.bi.bi-geo-alt-fill.me-2.text-primary
+    | Location Map
+  div.btn-group role="group"
+    button#refreshLocation.btn.btn-outline-primary type="button" title="Get my current location"
       i.bi.bi-geo-alt-fill.me-1
       | My Location
-    button#shareLocation.btn.btn-sm.btn-outline-success type="button"
+    button#shareLocation.btn.btn-outline-success type="button" title="Share my location with the flock"
       i.bi.bi-share.me-1
-      | Share
+      | Share Location
 
 / Map Container
-.card.shadow-sm.mb-4
-  .card-body.p-0
-    #map style="height: 600px; width: 100%; border-radius: 4px;"
-  .card-footer.bg-light.small
-    .d-flex.justify-content-between
-      div
-        | Latitude: 
-        span#currentLat --
-        | Longitude: 
-        span#currentLng --
-      div
-        | Updated: 
-        span#lastUpdate --
+div.card.shadow-sm.mb-4
+  div.card-header.bg-light
+    div.d-flex.justify-content-between.align-items-center
+      h5.card-title.mb-0
+        i.bi.bi-map.me-2
+        | Live Flock Map
+      div.badge.bg-primary.rounded-pill id="memberCount"
+        | Loading...
+  
+  div.card-body.p-0
+    div#map style="height: 600px; width: 100%; border-radius: 0 0 8px 8px;"
+  
+  div.card-footer.bg-light
+    div.row.text-center.text-md-start
+      div.col-md-6.mb-2.mb-md-0
+        small.text-muted
+          i.bi.bi-crosshair.me-1
+          | Latitude: 
+          span.text-monospace#currentLat --
+          | , Longitude: 
+          span.text-monospace#currentLng --
+      div.col-md-6
+        small.text-muted
+          i.bi.bi-clock.me-1
+          | Last updated: 
+          span#lastUpdate --
+
+/ Location Status Panel
+div.card.shadow-sm.mb-4
+  div.card-header
+    h6.card-title.mb-0
+      i.bi.bi-people-fill.me-2
+      | Flock Members
+  div.card-body
+    div#membersList.row
+      / Members will be populated by JavaScript
+    
+/ Toast for notifications
+div.toast-container.position-fixed.bottom-0.end-0.p-3
+  div.toast id="locationToast" role="alert" aria-live="assertive" aria-atomic="true"
+    div.toast-header
+      i.bi.bi-geo-alt-fill.text-success.me-2
+      strong.me-auto Location Update
+      small.text-muted now
+      button.btn-close type="button" data-bs-dismiss="toast" aria-label="Close"
+    div.toast-body
+      | Your location has been shared with the flock!
 
 / Leaflet CSS and JS
 link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 
+/ Data injection
 script
   | const birds = #{{ birds.to_json }};
+  | const currentBird = #{{ bird.to_json }};
 
-/ JavaScript logic
-script
+/ Enhanced JavaScript logic
+javascript:
   |
     document.addEventListener('DOMContentLoaded', () => {
-          const map = L.map('map').setView([24.79, 120.98], 13);
+      // Initialize map
+      const map = L.map('map').setView([24.79, 120.98], 13);
 
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
-          }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
 
-          const current_bird = #{{ bird.to_json }};
+      // Custom icons
+      const userIcon = L.divIcon({
+        className: 'custom-marker user-marker',
+        html: '<i class="bi bi-person-fill"></i>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+
+      const currentUserIcon = L.divIcon({
+        className: 'custom-marker current-user-marker',
+        html: '<i class="bi bi-geo-alt-fill"></i>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+
+      let currentUserMarker = null;
+      const memberMarkers = [];
+
+      // Function to update member count
+      function updateMemberCount() {
+        document.getElementById('memberCount').textContent = `${birds.length} members`;
+      }
+
+      // Function to populate members list
+      function populateMembersList() {
+        const membersList = document.getElementById('membersList');
+        membersList.innerHTML = '';
+
+        birds.forEach(entry => {
+          const user = entry.data.attributes;
+          const account = entry.included?.account?.attributes;
           
-          // Plot other users
-          birds.forEach(entry => {
-            const user = entry.data.attributes;
-            const account = entry.included.account.attributes
-            const popup = `<b>${account.username}</b><br>${user.message}<br>`;
-            L.marker([user.latitude, user.longitude]).addTo(map).bindPopup(popup);
-          });
+          if (!account) return;
 
-          // Send current location to backend
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-              const lat = pos.coords.latitude;
-              const lng = pos.coords.longitude;
-
-              // Send to backend
-              try {
-                const response = await fetch('/map', {
-                  method: 'POST', // or 'PATCH' depending on your backend
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ flock_id: current_bird.flock_id, bird_id: current_bird.bird_id, latitude: lat, longitude: lng, message: 'here' })
-                });
-
-                if (!response.ok) throw new Error('Failed to update location');
-              } catch (err) {
-                console.error(err);
-                alert('Could not update your location');
-              }
-            });
-          }
-
+          const memberCard = document.createElement('div');
+          memberCard.className = 'col-md-6 col-lg-4 mb-3';
+          memberCard.innerHTML = `
+            <div class="card border-light h-100 hover-shadow">
+              <div class="card-body p-3">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-person-circle text-primary me-2"></i>
+                  <strong>${account.username}</strong>
+                </div>
+                <p class="text-muted small mb-0">${user.message || 'No status message'}</p>
+                ${user.estimated_time ? `<small class="text-success"><i class="bi bi-clock me-1"></i>ETA: ${formatTime(user.estimated_time)}</small>` : ''}
+              </div>
+            </div>
+          `;
+          membersList.appendChild(memberCard);
         });
+      }
+
+      // Plot other users on map
+      function plotUsers() {
+        // Clear existing markers
+        memberMarkers.forEach(marker => map.removeLayer(marker));
+        memberMarkers.length = 0;
+
+        birds.forEach(entry => {
+          const user = entry.data.attributes;
+          const account = entry.included?.account?.attributes;
+          
+          if (!account || !user.latitude || !user.longitude) return;
+
+          const isCurrentUser = account.username === currentBird?.username;
+          const icon = isCurrentUser ? currentUserIcon : userIcon;
+          
+          const popup = `
+            <div class="text-center">
+              <strong>${account.username}</strong><br>
+              <span class="text-muted">${user.message || 'No message'}</span>
+              ${user.estimated_time ? `<br><small class="text-success">ETA: ${formatTime(user.estimated_time)}</small>` : ''}
+            </div>
+          `;
+          
+          const marker = L.marker([user.latitude, user.longitude], { icon })
+            .addTo(map)
+            .bindPopup(popup);
+          
+          memberMarkers.push(marker);
+          
+          if (isCurrentUser) {
+            currentUserMarker = marker;
+          }
+        });
+      }
+
+      // Format time helper
+      function formatTime(seconds) {
+        const minutes = Math.round(seconds / 60);
+        return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+      }
+
+      // Update current location display
+      function updateLocationDisplay(lat, lng) {
+        document.getElementById('currentLat').textContent = lat.toFixed(6);
+        document.getElementById('currentLng').textContent = lng.toFixed(6);
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+      }
+
+      // Show toast notification
+      function showLocationToast() {
+        const toast = new bootstrap.Toast(document.getElementById('locationToast'));
+        toast.show();
+      }
+
+      // Get current location button
+      document.getElementById('refreshLocation').addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          alert('Geolocation is not supported by this browser.');
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            updateLocationDisplay(lat, lng);
+            map.setView([lat, lng], 15);
+            
+            if (currentUserMarker) {
+              currentUserMarker.setLatLng([lat, lng]);
+            }
+          },
+          (error) => {
+            alert('Unable to retrieve your location.');
+            console.error('Geolocation error:', error);
+          }
+        );
+      });
+
+      // Share location button
+      document.getElementById('shareLocation').addEventListener('click', async () => {
+        if (!navigator.geolocation) {
+          alert('Geolocation is not supported by this browser.');
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          try {
+            const response = await fetch('/map', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({ 
+                flock_id: currentBird.flock_id, 
+                bird_id: currentBird.bird_id, 
+                latitude: lat, 
+                longitude: lng, 
+                message: currentBird.message || 'Current location'
+              })
+            });
+
+            if (!response.ok) throw new Error('Failed to update location');
+            
+            updateLocationDisplay(lat, lng);
+            showLocationToast();
+            
+          } catch (err) {
+            console.error('Location update error:', err);
+            alert('Could not update your location. Please try again.');
+          }
+        }, (error) => {
+          alert('Unable to retrieve your location.');
+          console.error('Geolocation error:', error);
+        });
+      });
+
+      // Initialize everything
+      updateMemberCount();
+      populateMembersList();
+      plotUsers();
+
+      // Auto-refresh every 30 seconds
+      setInterval(() => {
+        // You could add an API call here to refresh bird data
+        console.log('Auto-refresh triggered');
+      }, 30000);
+    });
