@@ -3,6 +3,9 @@
 require 'roda'
 require_relative 'app'
 
+require_relative '../forms/new_flock'
+require_relative '../forms/delete_flock'
+
 module Flocks
   class App < Roda # rubocop:disable Style/Documentation
     route('flock') do |routing| # rubocop:disable Metrics/BlockLength
@@ -42,17 +45,30 @@ module Flocks
       # GET and POST /flock/create
       routing.is 'create' do
         routing.get do
-          view :create_flock, locals: { current_account: @current_account }
+          view :create_flock, locals: {
+            current_account: @current_account,
+            form: Flocks::Form::NewFlock.new.call({})
+          }
         end
 
         routing.post do
-          # ASK: WHY check if logged in??
           unless @current_account&.logged_in?
             flash[:error] = 'Please register first'
             routing.redirect '/auth/login'
           end
 
-          destination_url = routing.params['destination_url']
+          form = Flocks::Form::NewFlock.new.call(routing.params)
+
+          if form.failure?
+            flash.now[:error] = form.errors(full: true).map { |err| err.text }.join('; ')
+            response.status = 422
+            return view :create_flock, locals: {
+              current_account: @current_account,
+              form:
+            }
+          end
+
+          destination_url = form[:destination_url]
 
           FlocksServices::CreateFlock.new(App.config).call(
             destination_url, @current_account
@@ -63,7 +79,90 @@ module Flocks
         rescue StandardError => e
           flash.now[:error] = e.message
           response.status = 400
-          view :create_flock, locals: { current_account: @current_account }
+          view :create_flock, locals: {
+            current_account: @current_account,
+            form:
+          }
+        end
+      end
+
+      # GET and POST /flock/[flock_id]/delete
+      routing.on String, 'delete' do |flock_id|
+        routing.get do
+          view :delete_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
+            form: Flocks::Form::DeleteFlock.new.call({})
+          }
+        end
+
+        routing.post do
+          form = Flocks::Form::DeleteFlock.new.call(routing.params.merge(flock_id: flock_id))
+
+          if form.failure?
+            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
+            response.status = 422
+            return view :delete_flock, locals: {
+              current_account: @current_account,
+              flock_id:,
+              form:
+            }
+          end
+
+          FlocksServices::DeleteFlock.new(App.config).call(flock_id, @current_account)
+
+          flash[:notice] = 'Flock deleted successfully'
+          routing.redirect '/flock/all'
+        rescue StandardError => e
+          flash.now[:error] = e.message
+          response.status = 400
+          view :delete_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
+            form:
+          }
+        end
+      end
+
+      # GET and POST /flock/[flock_id]/edit
+      routing.on String, 'edit' do |flock_id|
+        routing.get do
+          view :edit_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
+            form: Flocks::Form::NewFlock.new.call({})
+          }
+        end
+
+        routing.post do
+          form = Flocks::Form::NewFlock.new.call(routing.params)
+
+          if form.failure?
+            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
+            response.status = 422
+            return view :edit_flock, locals: {
+              current_account: @current_account,
+              flock_id:,
+              form:
+            }
+          end
+
+          destination_url = form[:destination_url]
+
+          FlocksServices::UpdateFlock.new(App.config).call(
+            flock_id, destination_url, @current_account
+          )
+
+          flash[:notice] = 'Flock destination updated successfully'
+          routing.redirect '/flock/all'
+        rescue StandardError => e
+          flash.now[:error] = e.message
+          response.status = 400
+          view :edit_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
+            form:
+          }
         end
       end
 

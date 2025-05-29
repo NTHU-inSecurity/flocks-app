@@ -28,7 +28,7 @@ module Flocks
       end
 
       rule(:confirm) do
-        key.failure('confirmation_required') if values[:confirm] == false
+        key.failure('confirmation_required') unless values[:confirm]
       end
     end
   end

@@ -5,11 +5,7 @@ require 'http'
 module Flocks
   # this class is for retrieving flock when user wants to join the flock
   class FlocksServices
-<<<<<<< HEAD:app/services/get_flock_id.rb
-    class GetFlockID # rubocop:disable Style/Documentation
-=======
     class GetFlock
->>>>>>> 2d6b14b (fixed auth):app/services/get_flock.rb
       def initialize(config)
         @api_url = config.API_URL
       end
