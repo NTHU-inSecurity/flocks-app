@@ -124,6 +124,48 @@ module Flocks
         end
       end
 
+      # GET and POST /flock/[flock_id]/edit
+      routing.on String, 'edit' do |flock_id|
+        routing.get do
+          view :edit_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
+            form: Flocks::Form::NewFlock.new.call({})
+          }
+        end
+
+        routing.post do
+          form = Flocks::Form::NewFlock.new.call(routing.params)
+
+          if form.failure?
+            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
+            response.status = 422
+            return view :edit_flock, locals: {
+              current_account: @current_account,
+              flock_id:,
+              form:
+            }
+          end
+
+          destination_url = form[:destination_url]
+
+          FlocksServices::UpdateFlock.new(App.config).call(
+            flock_id, destination_url, @current_account
+          )
+
+          flash[:notice] = 'Flock destination updated successfully'
+          routing.redirect '/flock/all'
+        rescue StandardError => e
+          flash.now[:error] = e.message
+          response.status = 400
+          view :edit_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
+            form:
+          }
+        end
+      end
+
       # PUT/POST /flock/[flock_id]/bird/[bird_id]/update
       routing.on String do |flock_id|
         routing.on 'bird', String do |bird_id|
