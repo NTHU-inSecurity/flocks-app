@@ -4,6 +4,7 @@ require 'roda'
 require_relative 'app'
 
 require_relative '../forms/new_flock'
+require_relative '../forms/delete_flock'
 
 module Flocks
   class App < Roda # rubocop:disable Style/Documentation
@@ -80,6 +81,44 @@ module Flocks
           response.status = 400
           view :create_flock, locals: {
             current_account: @current_account,
+            form:
+          }
+        end
+      end
+
+      # GET and POST /flock/[flock_id]/delete
+      routing.on String, 'delete' do |flock_id|
+        routing.get do
+          view :delete_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
+            form: Flocks::Form::DeleteFlock.new.call({})
+          }
+        end
+
+        routing.post do
+          form = Flocks::Form::DeleteFlock.new.call(routing.params.merge(flock_id: flock_id))
+
+          if form.failure?
+            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
+            response.status = 422
+            return view :delete_flock, locals: {
+              current_account: @current_account,
+              flock_id:,
+              form:
+            }
+          end
+
+          FlocksServices::DeleteFlock.new(App.config).call(flock_id, @current_account)
+
+          flash[:notice] = 'Flock deleted successfully'
+          routing.redirect '/flock/all'
+        rescue StandardError => e
+          flash.now[:error] = e.message
+          response.status = 400
+          view :delete_flock, locals: {
+            current_account: @current_account,
+            flock_id:,
             form:
           }
         end
