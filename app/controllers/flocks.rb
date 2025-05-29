@@ -3,6 +3,8 @@
 require 'roda'
 require_relative 'app'
 
+require_relative '../forms/new_flock'
+
 module Flocks
   class App < Roda # rubocop:disable Style/Documentation
     route('flock') do |routing| # rubocop:disable Metrics/BlockLength
@@ -42,17 +44,30 @@ module Flocks
       # GET and POST /flock/create
       routing.is 'create' do
         routing.get do
-          view :create_flock, locals: { current_account: @current_account }
+          view :create_flock, locals: {
+            current_account: @current_account,
+            form: Flocks::Form::NewFlock.new.call({})
+          }
         end
 
         routing.post do
-          # ASK: WHY check if logged in??
           unless @current_account&.logged_in?
             flash[:error] = 'Please register first'
             routing.redirect '/auth/login'
           end
 
-          destination_url = routing.params['destination_url']
+          form = Flocks::Form::NewFlock.new.call(routing.params)
+
+          if form.failure?
+            flash.now[:error] = form.errors(full: true).map { |err| err.text }.join('; ')
+            response.status = 422
+            return view :create_flock, locals: {
+              current_account: @current_account,
+              form:
+            }
+          end
+
+          destination_url = form[:destination_url]
 
           FlocksServices::CreateFlock.new(App.config).call(
             destination_url, @current_account
@@ -63,7 +78,10 @@ module Flocks
         rescue StandardError => e
           flash.now[:error] = e.message
           response.status = 400
-          view :create_flock, locals: { current_account: @current_account }
+          view :create_flock, locals: {
+            current_account: @current_account,
+            form:
+          }
         end
       end
 
