@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative './app'
+require_relative 'app'
 
 module Flocks
   # Web controller for Flocks API
@@ -17,14 +17,19 @@ module Flocks
 
         # POST /auth/login
         routing.post do
-          account_info = AuthenticateAccount.new(App.config).call(
-            username: routing.params['username'],
-            password: routing.params['password']
-          )
+          credentials = Form::LoginCredentials.new.call(routing.params)
+
+          if credentials.failure?
+            flash[:error] = 'Please enter both username and password'
+            routing.redirect @login_route
+          end
+
+          authenticated = AuthenticateAccount.new(App.config)
+            .call(**credentials.values)
 
           current_account = Account.new(
-            account_info[:account],
-            account_info[:auth_token]
+            authenticated[:account],
+            authenticated[:auth_token]
           )
 
           CurrentSession.new(session).current_account = current_account
@@ -53,7 +58,7 @@ module Flocks
       end
 
       @register_route = '/auth/register'
-      routing.on 'register' do
+      routing.on 'register' do # rubocop:disable Metrics/BlockLength
         routing.is do
           # GET /auth/register
           routing.get do
@@ -62,8 +67,14 @@ module Flocks
 
           # POST /auth/register
           routing.post do
-            account_data = routing.params.transform_keys(&:to_sym)
-            VerifyRegistration.new(App.config).call(account_data)
+            registration = Form::Registration.new.call(routing.params)
+
+            if registration.failure?
+              flash[:error] = Form.validation_errors(registration)
+              routing.redirect @register_route
+            end
+
+            VerifyRegistration.new(App.config).call(registration)
 
             flash[:notice] = 'Please check your email for a verification link'
             routing.redirect '/'

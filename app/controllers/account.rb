@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative './app'
+require_relative 'app'
 
 module Flocks
   # Web controller for Flocks API
   class App < Roda
-    route('account') do |routing|
-      routing.on do
+    route('account') do |routing| # rubocop:disable Metrics/BlockLength
+      routing.on do # rubocop:disable Metrics/BlockLength
         # GET /account/
         routing.get String do |username|
           if @current_account && @current_account.username == username
@@ -19,9 +19,8 @@ module Flocks
 
         # POST /account/<registration_token>
         routing.post String do |registration_token|
-          raise 'Passwords do not match or empty' if
-            routing.params['password'].empty? ||
-            routing.params['password'] != routing.params['password_confirm']
+          passwords = Form::Passwords.new.call(routing.params)
+          raise Form.message_values(passwords) if passwords.failure?
 
           new_account = SecureMessage.new(registration_token).decrypt
           CreateAccount.new(App.config).call(

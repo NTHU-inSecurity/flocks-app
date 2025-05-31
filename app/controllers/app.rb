@@ -4,6 +4,7 @@ require 'roda'
 require 'slim'
 
 require_relative '../models/current_session'
+require_relative '../forms/auth'
 
 module Flocks
   # Base class for Flocks Web Application

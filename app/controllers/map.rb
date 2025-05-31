@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative './app'
+require_relative 'app'
 
 module Flocks
   # Web controller for Flocks API
@@ -11,6 +11,7 @@ module Flocks
         # GET /map
         routing.get do
           birds = FlocksServices::GetBirds.new(App.config).call(
+            current_account: @current_account,
             flock_id: routing.params['flock_id']
           )
 
@@ -19,7 +20,8 @@ module Flocks
           current_bird = { flock_id: bird['included']['flock']['attributes']['id'],
                            bird_id: bird['data']['attributes']['id'] }
 
-          view :map, locals: { current_account: @current_account, birds:, bird: current_bird }
+          view :map,
+               locals: { current_account: @current_account, flock_id: routing.params['flock_id'], bird: current_bird }
         end
 
         # POST /map/
@@ -27,6 +29,7 @@ module Flocks
           data = JSON.parse(routing.body.read)
 
           FlocksServices::UpdateBird.new(App.config).call(
+            current_account: @current_account,
             flock_id: data['flock_id'],
             bird_id: data['bird_id'],
             latitude: data['latitude'],
