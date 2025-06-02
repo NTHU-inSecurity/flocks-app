@@ -24,7 +24,7 @@ module Flocks
             data = JSON.parse(response)['data']
             account_details = data['attributes']['account']
             auth_token = data['attributes']['auth_token']
-            Credence::Account.new(account_details, auth_token)
+            Flocks::Account.new(account_details, auth_token)
         end
     end
 end

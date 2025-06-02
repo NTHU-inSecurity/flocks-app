@@ -14,7 +14,7 @@ module Flocks
             @current_account, username
           )
 
-          view :account, locals: { account: account }
+          view :account, locals: { current_account: account }
         rescue GetAccountDetails::InvalidAccount => e
           flash[:error] = e.message
           routing.redirect '/auth/login'
