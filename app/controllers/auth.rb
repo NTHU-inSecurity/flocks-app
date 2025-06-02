@@ -6,13 +6,25 @@ require_relative 'app'
 module Flocks
   # Web controller for Flocks API
   class App < Roda
-    route('auth') do |routing| # rubocop:disable Metrics/BlockLength
-      @login_route = '/auth/login'
+    def google_oauth_url(config)
+      url = config.GOOGLE_OAUTH_URL
+      client_id = config.GOOGLE_CLIENT_ID
+      scope = config.GOOGLE_SCOPE
+      redirect_uri = config.GOOGLE_REDIRECT_URI
+      code = 'code'
 
+      "#{url}?client_id=#{client_id}&scope=#{scope}&response_type=#{code}&redirect_uri=#{redirect_uri}"
+    end
+
+    route('auth') do |routing| # rubocop:disable Metrics/BlockLength
+      @oauth_callback = '/auth/sso_callback'
+      @login_route = '/auth/login'
       routing.is 'login' do
         # GET /auth/login
         routing.get do
-          view :login
+          view :login, locals: {
+            google_oauth_url: google_oauth_url(App.config)
+          }
         end
 
         # POST /auth/login
@@ -25,7 +37,7 @@ module Flocks
           end
 
           authenticated = AuthenticateAccount.new(App.config)
-            .call(**credentials.values)
+                                             .call(**credentials.values)
 
           current_account = Account.new(
             authenticated[:account],
@@ -43,6 +55,36 @@ module Flocks
         rescue AuthenticateAccount::ApiServerError => e
           App.logger.warn "API server error: #{e.inspect}\n#{e.backtrace}"
           flash[:error] = 'Our servers are not responding -- please try later'
+          response.status = 500
+          routing.redirect @login_route
+        end
+      end
+
+      routing.is 'sso_callback' do
+        # GET /auth/sso_callback
+        routing.get do
+          puts(code: routing.params['code'])
+
+          authorized = AuthorizeGoogleAccount
+                       .new(App.config)
+                       .call(routing.params['code'])
+
+          current_account = Account.new(
+            authorized[:account],
+            authorized[:auth_token]
+          )
+
+          CurrentSession.new(session).current_account = current_account
+
+          flash[:notice] = "Welcome #{current_account.username}!"
+          routing.redirect '/flocks/all'
+        rescue AuthorizeGoogleAccount::UnauthorizedError
+          flash[:error] = 'Could not login with Google'
+          response.status = 403
+          routing.redirect @login_route
+        rescue StandardError => e
+          puts "SSO LOGIN ERROR: #{e.inspect}\n#{e.backtrace}"
+          flash[:error] = 'Unexpected API Error'
           response.status = 500
           routing.redirect @login_route
         end
