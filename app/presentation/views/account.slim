@@ -5,6 +5,19 @@ div class="card mb-4 shadow-sm"
     div class="row mb-3"
       div class="col-sm-3 fw-bold text-muted" Username:
       div class="col-sm-9" == current_account.username
-    div class="row"
+    div class="row mb-3"
       div class="col-sm-3 fw-bold text-muted" Email:
       div class="col-sm-9" == current_account.email
+
+div class="card shadow-sm"
+  div class="card-body"
+    h3 class="card-title mb-3" API Access
+    p.text-muted (read-only key valid for one month)
+    div class="row mb-2"
+      div class="col-sm-3 fw-bold text-muted" API Key:
+      div class="col-sm-9"
+        dd.blockquote
+          a href="#api_key" data-bs-toggle="collapse" aria-expanded="false" aria-controls="api_key" Show key
+          div#api_key.collapse.mt-2
+            div.card.card-body
+              pre.text-wrap = current_account.auth_token
