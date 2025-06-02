@@ -1,10 +1,26 @@
-h1 class="mb-4" Account Details
+h1.mb-4 Account Details
 
-div class="card mb-4 shadow-sm"
-  div class="card-body"
-    div class="row mb-3"
-      div class="col-sm-3 fw-bold text-muted" Username:
-      div class="col-sm-9" == current_account.username
-    div class="row"
-      div class="col-sm-3 fw-bold text-muted" Email:
-      div class="col-sm-9" == current_account.email
+div.card.mb-4.shadow-sm
+  div.card-body
+    div.row.mb-3
+      div.col-sm-3.fw-bold.text-muted Username:
+      div.col-sm-9
+        = current_account.account_info['attributes']['username']
+
+    div.row.mb-3
+      div.col-sm-3.fw-bold.text-muted Email:
+      div.col-sm-9
+        = current_account.account_info['attributes']['email']
+
+div.card.shadow-sm
+  div.card-body
+    h3.card-title.mb-3 API Access
+    p.text-muted (read-only key valid for one month)
+    div.row.mb-2
+      div.col-sm-3.fw-bold.text-muted API Key:
+      div.col-sm-9
+        dd.blockquote
+          a href="#api_key" data-bs-toggle="collapse" aria-expanded="false" aria-controls="api_key" Show key
+          div#api_key.collapse.mt-2
+            div.card.card-body
+              pre.text-wrap = current_account.auth_token
