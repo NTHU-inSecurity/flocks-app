@@ -63,8 +63,6 @@ module Flocks
       routing.is 'sso_callback' do
         # GET /auth/sso_callback
         routing.get do
-          puts(code: routing.params['code'])
-
           authorized = AuthorizeGoogleAccount
                        .new(App.config)
                        .call(routing.params['code'])
@@ -77,7 +75,7 @@ module Flocks
           CurrentSession.new(session).current_account = current_account
 
           flash[:notice] = "Welcome #{current_account.username}!"
-          routing.redirect '/flocks/all'
+          routing.redirect '/flock/all'
         rescue AuthorizeGoogleAccount::UnauthorizedError
           flash[:error] = 'Could not login with Google'
           response.status = 403
@@ -125,7 +123,8 @@ module Flocks
             flash[:error] = 'Our servers are not responding -- please try later'
             routing.redirect @register_route
           rescue StandardError => e
-            App.logger.error "Could not process registration: #{e.inspect}"
+            # App.logger.error "Could not process registration: #{e.inspect}"
+            puts(e.backtrace)
             flash[:error] = 'Registration process failed -- please try later'
             routing.redirect @register_route
           end

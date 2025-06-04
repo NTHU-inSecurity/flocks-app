@@ -21,7 +21,10 @@ module Flocks
                            bird_id: bird['data']['attributes']['id'] }
 
           view :map,
-               locals: { current_account: @current_account, flock_id: routing.params['flock_id'], bird: current_bird }
+               locals: { current_account: @current_account,
+                         flock_id: routing.params['flock_id'],
+                         bird: current_bird,
+                         birds: birds }
         end
 
         # POST /map/

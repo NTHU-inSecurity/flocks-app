@@ -1,150 +1,46 @@
-/ Page Header
-div.d-flex.justify-content-between.align-items-center.mb-4
-  h1.mb-0
-    i.bi.bi-geo-alt-fill.me-2.text-primary
-    | Location Map
-  div.btn-group role="group"
-    button#refreshLocation.btn.btn-outline-primary type="button" title="Get my current location"
-      i.bi.bi-geo-alt-fill.me-1
-      | My Location
-    button#shareLocation.btn.btn-outline-success type="button" title="Share my location with the flock"
-      i.bi.bi-share.me-1
-      | Share Location
 
-/ Map Container
-div.card.shadow-sm.mb-4
-  div.card-header.bg-light
-    div.d-flex.justify-content-between.align-items-center
-      h5.card-title.mb-0
-        i.bi.bi-map.me-2
-        | Live Flock Map
-      div.badge.bg-primary.rounded-pill id="memberCount"
-        | Loading...
-  
-  div.card-body.p-0
-    div#map style="height: 600px; width: 100%; border-radius: 0 0 8px 8px;"
-  
-  div.card-footer.bg-light
-    div.row.text-center.text-md-start
-      div.col-md-6.mb-2.mb-md-0
-        small.text-muted
-          i.bi.bi-crosshair.me-1
-          | Latitude: 
-          span.text-monospace#currentLat --
-          | , Longitude: 
-          span.text-monospace#currentLng --
-      div.col-md-6
-        small.text-muted
-          i.bi.bi-clock.me-1
-          | Last updated: 
-          span#lastUpdate --
-
-/ Location Status Panel
-div.card.shadow-sm.mb-4
-  div.card-header
-    h6.card-title.mb-0
-      i.bi.bi-people-fill.me-2
-      | Flock Members
-  div.card-body
-    div#membersList.row
-      / Members will be populated by JavaScript
-    
-/ Toast for notifications
-div.toast-container.position-fixed.bottom-0.end-0.p-3
-  div.toast id="locationToast" role="alert" aria-live="assertive" aria-atomic="true"
-    div.toast-header
-      i.bi.bi-geo-alt-fill.text-success.me-2
-      strong.me-auto Location Update
-      small.text-muted now
-      button.btn-close type="button" data-bs-dismiss="toast" aria-label="Close"
-    div.toast-body
-      | Your location has been shared with the flock!
+.card.shadow-sm.mb-4
+  .card-body.p-0
+    #map style="height: 600px; width: 100%; border-radius: 4px;"
 
 / Leaflet CSS and JS
 link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 
-/ Data injection
-script
-  | const birds = #{{ birds.to_json }};
-  | const currentBird = #{{ bird.to_json }};
+/ Include Faye client script
+script src="http://localhost:3000/faye/faye.js"
 
-/ Enhanced JavaScript logic
-javascript:
+script
   |
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize map
       const map = L.map('map').setView([24.79, 120.98], 13);
+      const userMarkers = {};
+      const channel = "#{{ flock_id }}";
+      const current_bird = #{{ bird.to_json }};
+
+      const client = new Faye.Client("http://localhost:3000/faye");
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // Custom icons
-      const userIcon = L.divIcon({
-        className: 'custom-marker user-marker',
-        html: '<i class="bi bi-person-fill"></i>',
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-
-      const currentUserIcon = L.divIcon({
-        className: 'custom-marker current-user-marker',
-        html: '<i class="bi bi-geo-alt-fill"></i>',
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-
-      let currentUserMarker = null;
-      const memberMarkers = [];
-
-      // Function to update member count
-      function updateMemberCount() {
-        document.getElementById('memberCount').textContent = `${birds.length} members`;
+      function updateMarker(id, name, msg, lat, lng) {
+        const popup = `<b>${name}</b><br>${msg}<br>`;
+        if (!userMarkers[id]) {
+          userMarkers[id] = L.marker([lat, lng]).addTo(map).bindPopup(popup);
+        } else {
+          userMarkers[id].setLatLng([lat, lng]);
+          userMarkers[id].bindPopup(popup);
+        }
       }
 
-      // Function to populate members list
-      function populateMembersList() {
-        const membersList = document.getElementById('membersList');
-        membersList.innerHTML = '';
-
-        birds.forEach(entry => {
-          const user = entry.data.attributes;
-          const account = entry.included?.account?.attributes;
-          
-          if (!account) return;
-
-          const memberCard = document.createElement('div');
-          memberCard.className = 'col-md-6 col-lg-4 mb-3';
-          memberCard.innerHTML = `
-            <div class="card border-light h-100 hover-shadow">
-              <div class="card-body p-3">
-                <div class="d-flex align-items-center mb-2">
-                  <i class="bi bi-person-circle text-primary me-2"></i>
-                  <strong>${account.username}</strong>
-                </div>
-                <p class="text-muted small mb-0">${user.message || 'No status message'}</p>
-                ${user.estimated_time ? `<small class="text-success"><i class="bi bi-clock me-1"></i>ETA: ${formatTime(user.estimated_time)}</small>` : ''}
-              </div>
-            </div>
-          `;
-          membersList.appendChild(memberCard);
-        });
-      }
-
-      // Plot other users on map
-      function plotUsers() {
-        // Clear existing markers
-        memberMarkers.forEach(marker => map.removeLayer(marker));
-        memberMarkers.length = 0;
-
+      client.subscribe(`/${channel}`, (birds) => {
+        console.log(birds)
         birds.forEach(entry => {
           const user = entry.data.attributes;
           const account = entry.included.account.attributes;
-          if (user.latitude != null && user.longitude != null) {
-            updateMarker(user.id, account.username, user.message, user.latitude, user.longitude);
-          }
+          updateMarker(user.id, account.username, user.message, user.latitude, user.longitude);
         });
       });
 
@@ -159,15 +55,4 @@ javascript:
                                  message: 'here' })
         });
       });
-
-      // Initialize everything
-      updateMemberCount();
-      populateMembersList();
-      plotUsers();
-
-      // Auto-refresh every 30 seconds
-      setInterval(() => {
-        // You could add an API call here to refresh bird data
-        console.log('Auto-refresh triggered');
-      }, 30000);
     });

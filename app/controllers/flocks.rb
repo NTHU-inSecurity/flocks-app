@@ -47,7 +47,7 @@ module Flocks
         routing.get do
           view :create_flock, locals: {
             current_account: @current_account,
-            form: Flocks::Form::NewFlock.new.call({})
+            form: Form::NewFlock.new.call({})
           }
         end
 
@@ -57,7 +57,8 @@ module Flocks
             routing.redirect '/auth/login'
           end
 
-          form = Flocks::Form::NewFlock.new.call(routing.params)
+          # dolbaeb blyad nahuya ty snova prepisyvaesh' flocks
+          form = Form::NewFlock.new.call(routing.params)
 
           if form.failure?
             flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
@@ -92,12 +93,12 @@ module Flocks
           view :delete_flock, locals: {
             current_account: @current_account,
             flock_id:,
-            form: Flocks::Form::DeleteFlock.new.call({})
+            form: Form::DeleteFlock.new.call({})
           }
         end
 
         routing.post do
-          form = Flocks::Form::DeleteFlock.new.call(routing.params.merge(flock_id: flock_id))
+          form = Form::DeleteFlock.new.call(routing.params.merge(flock_id: flock_id))
 
           if form.failure?
             flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
@@ -130,12 +131,12 @@ module Flocks
           view :edit_flock, locals: {
             current_account: @current_account,
             flock_id:,
-            form: Flocks::Form::NewFlock.new.call({})
+            form: Form::NewFlock.new.call({})
           }
         end
 
         routing.post do
-          form = Flocks::Form::NewFlock.new.call(routing.params)
+          form = Form::NewFlock.new.call(routing.params)
 
           if form.failure?
             flash.now[:error] = form.errors(full: true).map(&:text).join('; ')

@@ -33,7 +33,6 @@ module Flocks
                           grant_type: 'authorization_code',
                           redirect_uri: @config.GOOGLE_REDIRECT_URI })
 
-      puts(challenge_response)
       raise UnauthorizedError unless challenge_response.status < 400
 
       JSON.parse(challenge_response)['access_token']
