@@ -60,7 +60,7 @@ module Flocks
           form = Flocks::Form::NewFlock.new.call(routing.params)
 
           if form.failure?
-            flash.now[:error] = form.errors(full: true).map { |err| err.text }.join('; ')
+            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
             response.status = 422
             return view :create_flock, locals: {
               current_account: @current_account,
