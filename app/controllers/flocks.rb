@@ -57,7 +57,6 @@ module Flocks
             routing.redirect '/auth/login'
           end
 
-          # dolbaeb blyad nahuya ty snova prepisyvaesh' flocks
           form = Form::NewFlock.new.call(routing.params)
 
           if form.failure?
