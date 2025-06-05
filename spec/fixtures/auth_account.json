@@ -1,0 +1,15 @@
+{
+  "data": {
+    "type": "authenticated_account",
+    "attributes": {
+      "account": {
+        "type": "account",
+        "attributes": {
+          "username": "alice.wu",
+          "email": "alice.wu@dev.com"
+        }
+      },
+      "auth_token": "rT2G8bL1XeKz9vYq3TmbWuPcN4uRJLkR4XxG9KH6FvhD7sTZq_3gVe89qEpw0zChFgXGgM9EvRukGr8WTlQDyPobBoVWLdTDlU8vLxFGoR0wPM9Urnk2JL53EvbkMop7Fg2bTw5BmxsN1Qkz7UIkRcGpAOvR6MI9zWBnfRPZLQ"
+    }
+  }
+}
