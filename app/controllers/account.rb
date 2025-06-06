@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative 'app'
+require_relative './app'
 
 module Flocks
   # Web controller for Flocks API
   class App < Roda
-    route('account') do |routing| # rubocop:disable Metrics/BlockLength
-      routing.on do # rubocop:disable Metrics/BlockLength
+    route('account') do |routing| 
+      routing.on do 
         # GET /account/[username]
         routing.get String do |username|
           account = GetAccountDetails.new(App.config).call(
@@ -20,7 +20,7 @@ module Flocks
           routing.redirect '/auth/login'
         end
 
-        # POST /account/<registration_token>
+        # POST /account/[registration_token]
         routing.post String do |registration_token|
           passwords = Form::Passwords.new.call(routing.params)
           raise Form.message_values(passwords) if passwords.failure?

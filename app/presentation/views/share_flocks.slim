@@ -1,19 +1,19 @@
 h2.text-center.mb-4 Share Flock
 
-- if flock["attributes"]
+- if flock
   div.card.shadow-sm
     div.card-body
       h5.card-title
         i.bi.bi-geo-alt-fill.me-2.text-primary
         | Destination
-      p.card-text = flock["attributes"]["destination_url"]
+      p.card-text = flock.destination_url
 
       div.text-muted.small.mt-2
         strong ID:
-        span.text-monospace = flock["attributes"]["id"]
+        span.text-monospace = flock.id
 
     div.card-footer.text-end
-      form method="post" action="/flock/join/#{flock['attributes']['id']}"
+      form method="post" action="/flock/join/#{flock.id}"
         button.btn.btn-primary type="submit"
           i.bi.bi-person-plus.me-1
           | Join Flock

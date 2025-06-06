@@ -15,8 +15,7 @@ script
     document.addEventListener('DOMContentLoaded', () => {
       const map = L.map('map').setView([24.79, 120.98], 13);
       const userMarkers = {};
-      const channel = "#{{ flock_id }}";
-      const current_bird = #{{ bird.to_json }};
+      const channel = "#{flock_id}";
 
       const client = new Faye.Client("http://localhost:3000/faye");
 
@@ -49,7 +48,7 @@ script
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ flock_id: channel, 
-                                 bird_id: current_bird.bird_id, 
+                                 bird_id: "#{current_bird.id}", 
                                  latitude: position.coords.latitude, 
                                  longitude: position.coords.longitude, 
                                  message: 'here' })

@@ -7,14 +7,14 @@ module Flocks
     # Form object for creating a new flock with destination URL
     # Validates Google Maps URLs for meeting locations
     class NewFlock < Dry::Validation::Contract
-      config.messages.load_paths << File.join(__dir__, 'errors/new_flock.yml')
+      FAIL_MSG = 'Please enter a valid destination URL (Google Maps URL)'
 
       params do
-        required(:destination_url).filled(format?: URI::DEFAULT_PARSER.make_regexp)
+        required(:destination_url).value(:string)
       end
 
       rule(:destination_url) do
-        key.failure('google_maps_url') unless value&.include?('maps.google.com') || value&.include?('maps.app.goo.gl')
+        key.failure(FAIL_MSG) unless value.match?(GOOGLE_MAPS_URL_REGEX)
       end
     end
   end

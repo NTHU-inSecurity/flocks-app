@@ -1,200 +1,130 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative 'app'
-
-require_relative '../forms/new_flock'
-require_relative '../forms/delete_flock'
+require_relative './app'
 
 module Flocks
-  class App < Roda # rubocop:disable Style/Documentation
-    route('flock') do |routing| # rubocop:disable Metrics/BlockLength
+  # Web controller for Flocks APP (flock routes)
+  class App < Roda 
+    route('flock') do |routing| 
+
+      routing.redirect '/auth/login' unless @current_account.logged_in?
+      @flocks_route = '/flock/all'
+
       # GET /flock/all
       routing.is 'all' do
-        flocks = FlocksServices::GetFlocks.new(App.config).call(@current_account)
-        view :flocks, locals: { flocks:, current_account: @current_account }
+        flocks_info = FlocksServices::GetFlocks.new(App.config).call(@current_account)
+        flocks = Flocks.new(flocks_info)
+
+        view :flocks, locals: { flocks: flocks, current_account: @current_account }
       end
 
       # GET /flock/share/[ID]
       routing.on 'share', String do |flock_id|
         flock_data = FlocksServices::GetFlock.new(App.config).call(current_account: @current_account,
                                                                    flock_id: flock_id)
-        view :share_flocks, locals: { flock: flock_data, current_account: @current_account }
+        flock = Flock.new(flock_data)                                                           
+                                                                   
+        view :share_flocks, locals: { flock: flock, current_account: @current_account }
       rescue StandardError => e
-        flash[:error] = e.message
-        response.status = 400
-        routing.redirect '/'
+        App.logger.error "#{e.inspect}\n#{e.backtrace}"
+        flash[:error] = 'Flock not found'
+        routing.redirect @flocks_route
       end
 
-      # POST /flock/join/[id]
+      # POST /flock/join/[ID]
       routing.on 'join', String do |flock_id|
         routing.post do
-          @current_account.username
           FlocksServices::JoinFlock.new(App.config).call(
             current_account: @current_account,
             flock_id: flock_id
           )
           flash[:notice] = 'You have successfully joined the flock!'
-          routing.redirect '/flock/all'
+          routing.redirect @flocks_route
         rescue StandardError => e
-          flash[:error] = "Could not join the flock: #{e.message}"
-          routing.redirect '/'
+          App.logger.error "#{e.inspect}\n#{e.backtrace}"
+          flash[:error] = "Couldn't join the flock"
+          routing.redirect @flocks_route
         end
       end
 
-      # GET and POST /flock/create
       routing.is 'create' do
+        # GET /flock/create
         routing.get do
-          view :create_flock, locals: {
-            current_account: @current_account,
-            form: Form::NewFlock.new.call({})
-          }
+          view :create_flock, locals: { current_account: @current_account }
         end
 
+        # POST /flock/create
         routing.post do
-          unless @current_account&.logged_in?
-            flash[:error] = 'Please register first'
-            routing.redirect '/auth/login'
-          end
-
           form = Form::NewFlock.new.call(routing.params)
 
           if form.failure?
-            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
-            response.status = 422
-            return view :create_flock, locals: {
-              current_account: @current_account,
-              form:
-            }
+            flash[:error] = Form.message_values(form)
+            routing.halt
           end
 
-          destination_url = form[:destination_url]
-
           FlocksServices::CreateFlock.new(App.config).call(
-            destination_url, @current_account
+            destination_url: form[:destination_url], 
+            current_account: @current_account
           )
 
           flash[:notice] = 'Flock created successfully'
           routing.redirect '/flock/all'
         rescue StandardError => e
-          flash.now[:error] = e.message
-          response.status = 400
-          view :create_flock, locals: {
-            current_account: @current_account,
-            form:
-          }
+          App.logger.error "ERROR CREATING FLOCK: #{e.inspect}"
+          flash[:error] = 'Could not create flock'
+        ensure
+          routing.redirect @flocks_route
         end
       end
 
-      # GET and POST /flock/[flock_id]/delete
       routing.on String, 'delete' do |flock_id|
+        # GET /flock/[ID]/delete
         routing.get do
-          view :delete_flock, locals: {
-            current_account: @current_account,
-            flock_id:,
-            form: Form::DeleteFlock.new.call({})
-          }
+          view :delete_flock, locals: { current_account: @current_account, flock_id: }
         end
 
+        # POST /flock/[ID]/delete
         routing.post do
-          form = Form::DeleteFlock.new.call(routing.params.merge(flock_id: flock_id))
-
-          if form.failure?
-            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
-            response.status = 422
-            return view :delete_flock, locals: {
-              current_account: @current_account,
-              flock_id:,
-              form:
-            }
-          end
-
-          FlocksServices::DeleteFlock.new(App.config).call(flock_id, @current_account)
+          FlocksServices::DeleteFlock.new(App.config).call(flock_id:, current_account: @current_account)
 
           flash[:notice] = 'Flock deleted successfully'
-          routing.redirect '/flock/all'
+          routing.redirect @flocks_route
         rescue StandardError => e
-          flash.now[:error] = e.message
-          response.status = 400
-          view :delete_flock, locals: {
-            current_account: @current_account,
-            flock_id:,
-            form:
-          }
+          App.logger.error "ERROR DELETING FLOCK: #{e.inspect}"
+          flash[:error] = 'Could not delete flock'
+        ensure
+          routing.redirect @flocks_route
         end
       end
 
-      # GET and POST /flock/[flock_id]/edit
+      # GET and POST /flock/[ID]/edit
       routing.on String, 'edit' do |flock_id|
         routing.get do
-          view :edit_flock, locals: {
-            current_account: @current_account,
-            flock_id:,
-            form: Form::NewFlock.new.call({})
-          }
+          view :edit_flock, locals: { current_account: @current_account, flock_id: }
         end
 
         routing.post do
           form = Form::NewFlock.new.call(routing.params)
 
           if form.failure?
-            flash.now[:error] = form.errors(full: true).map(&:text).join('; ')
-            response.status = 422
-            return view :edit_flock, locals: {
-              current_account: @current_account,
-              flock_id:,
-              form:
-            }
+            flash[:error] = Form.message_values(form)
+            routing.halt
           end
-
-          destination_url = form[:destination_url]
 
           FlocksServices::UpdateFlock.new(App.config).call(
-            flock_id, destination_url, @current_account
+            flock_id:, 
+            destination_url: form[:destination_url],
+            current_account: @current_account
           )
 
-          flash[:notice] = 'Flock destination updated successfully'
-          routing.redirect '/flock/all'
+          flash[:notice] = 'Meeting place updated successfully'
+          routing.redirect @flocks_route
         rescue StandardError => e
-          flash.now[:error] = e.message
-          response.status = 400
-          view :edit_flock, locals: {
-            current_account: @current_account,
-            flock_id:,
-            form:
-          }
-        end
-      end
-
-      # PUT/POST /flock/[flock_id]/bird/[bird_id]/update
-      routing.on String do |flock_id|
-        routing.on 'bird', String do |bird_id|
-          routing.on 'update' do
-            routing.post do
-              unless @current_account&.logged_in?
-                flash[:error] = 'Please login first'
-                routing.redirect '/auth/login'
-              end
-
-              message = routing.params['message'] || ''
-              latitude = routing.params['latitude']&.to_f
-              longitude = routing.params['longitude']&.to_f
-
-              FlocksServices::UpdateBird.new(App.config).call(
-                flock_id:,
-                bird_id:,
-                latitude:,
-                longitude:,
-                message:
-              )
-
-              flash[:notice] = 'Message updated successfully!'
-              routing.redirect "/flock/share/#{flock_id}"
-            rescue StandardError => e
-              flash[:error] = "Could not update message: #{e.message}"
-              routing.redirect "/flock/share/#{flock_id}"
-            end
-          end
+          App.logger.error "ERROR UPDATING FLOCK: #{e.inspect}"
+          flash[:error] = 'Could not update meeting place'
+        ensure
+          routing.redirect @flocks_route
         end
       end
     end

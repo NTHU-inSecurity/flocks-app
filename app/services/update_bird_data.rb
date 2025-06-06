@@ -4,7 +4,7 @@ require 'http'
 
 module Flocks
   class FlocksServices
-    class UpdateBird # rubocop:disable Style/Documentation
+    class UpdateBird 
       def initialize(config)
         @api_url = config.API_URL
       end

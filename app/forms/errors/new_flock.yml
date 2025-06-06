@@ -1,6 +1,0 @@
-en:
-  errors:
-    destination_url: "Please enter a valid destination URL"
-    google_maps_url: "Please provide a valid Google Maps URL (maps.google.com or maps.app.goo.gl)"
-    url_format: "URL format is invalid"
-    url_required: "Destination URL is required"

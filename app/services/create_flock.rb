@@ -4,12 +4,12 @@ require 'http'
 
 module Flocks
   class FlocksServices
-    class CreateFlock # rubocop:disable Style/Documentation
+    class CreateFlock 
       def initialize(config)
         @config = config
       end
 
-      def call(destination_url, current_account)
+      def call(destination_url:, current_account:)
         response = HTTP.auth("Bearer #{current_account.auth_token}")
                        .post("#{@config.API_URL}/flocks", json: { destination_url: })
 

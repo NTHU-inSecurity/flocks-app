@@ -1,6 +1,6 @@
 h1.mb-4 All Flocks
 
-- if flocks.empty?
+- if flocks.nil?
   div.card.shadow-sm
     div.card-body.text-center.py-5
       p.text-muted.mb-4 No flocks found.
@@ -9,7 +9,7 @@ h1.mb-4 All Flocks
         | Create New Flock
 - else
   div.row.row-cols-1.row-cols-md-2.g-4.mb-4
-    - flocks.each do |flock|
+    - flocks.all.each do |flock|
       div.col
         div.card.h-100.shadow-sm.hover-shadow
           div.card-body
@@ -17,99 +17,68 @@ h1.mb-4 All Flocks
               i.bi.bi-geo-alt-fill.me-2.text-primary
               | Flock
             div.card-text
-              - if flock["attributes"] && flock["attributes"]["destination_url"]
-                div.mb-3
-                  div.text-muted.mb-1.small Destination:
-                  a.d-block.text-truncate href="#{flock["attributes"]["destination_url"]}" target="_blank"
-                    = flock["attributes"]["destination_url"]
-                    i.bi.bi-box-arrow-up-right.ms-1.small
+              div.mb-3
+                div.text-muted.mb-1.small Destination:
+                a.d-block.text-truncate href="#{flock.destination_url}" target="_blank"
+                  = flock.destination_url
+                  i.bi.bi-box-arrow-up-right.ms-1.small
 
-              - if flock["attributes"] && flock["attributes"]["id"]
-                div
-                  div.text-muted.mb-1.small ID:
-                  div.text-truncate.small.text-monospace = flock["attributes"]["id"]
+              div
+                div.text-muted.mb-1.small ID:
+                div.text-truncate.small.text-monospace = flock.id
 
-              - if flock["birds"] && !flock["birds"].empty?
+              - if flock.birds && !flock.birds.empty?
                 hr.my-3
                 div
                   div.d-flex.justify-content-between.align-items-center.mb-2
-                    div.text-muted.small People:
-                    span.badge.bg-primary.rounded-pill = flock["birds"].size
+                    div.text-muted.small Birds:
+                    span.badge.bg-primary.rounded-pill = flock.birds.size
 
                   div.list-group.list-group-flush.small
-                    - flock["birds"].each do |bird|
+                    - flock.birds.each do |bird|
                       div.list-group-item.px-0.py-2
                         div.d-flex.justify-content-between.align-items-center
                           div.flex-grow-1
-                            strong = bird["username"]
-                            - if bird["message"] && !bird["message"].empty?
-                              p.text-muted.mb-0.mt-1 id="message-#{bird['id']}" = bird["message"]
-                            - else
-                              p.text-muted.mb-0.mt-1 id="message-#{bird['id']}" style="font-style: italic;" No message
-                          div.d-flex.align-items-center
-                            - if bird["estimated_time"]
-                              span.badge.bg-light.text-dark.me-2 #{format_time(bird["estimated_time"])}
-                            - if current_account && current_account.username == bird["username"]
-                              button.btn.btn-sm.btn-outline-secondary onclick="editMessage('#{bird['id']}', '#{flock['attributes']['id']}', '#{bird['message'] || ''}')" title="Edit your message"
-                                i.bi.bi-pencil
+                            strong = bird.username
 
           div.card-footer.bg-transparent
             div.d-flex.justify-content-between.align-items-center
-              a.btn.btn-sm.btn-outline-primary href="/map?flock_id=#{flock["attributes"]["id"]}" View Details
+              a.btn.btn-sm.btn-outline-primary href="/map?flock_id=#{flock.id}" View Details
 
               div.dropdown
-                button.btn.btn-sm.btn-light.dropdown-toggle type="button" id="dropdownMenuButton-#{flock["attributes"]["id"]}" data-bs-toggle="dropdown" aria-expanded="false"
+                button.btn.btn-sm.btn-light.dropdown-toggle type="button" id="dropdownMenuButton-#{flock.id}" data-bs-toggle="dropdown" aria-expanded="false"
                   i.bi.bi-three-dots-vertical
-                ul.dropdown-menu.dropdown-menu-end aria-labelledby="dropdownMenuButton-#{flock["attributes"]["id"]}"
+                ul.dropdown-menu.dropdown-menu-end aria-labelledby="dropdownMenuButton-#{flock.id}"
                   li
-                    a.dropdown-item href="#" data-bs-toggle="modal" data-bs-target="#shareModal-#{flock["attributes"]["id"]}"
+                    a.dropdown-item href="#" data-bs-toggle="modal" data-bs-target="#shareModal-#{flock.id}"
                       i.bi.bi-share.me-2
                       | Share
                   li
-                    a.dropdown-item href="/flock/#{flock["attributes"]["id"]}/edit"
+                    a.dropdown-item href="/flock/#{flock.id}/edit"
                       i.bi.bi-pencil.me-2
                       | Edit
                   li
                     hr.dropdown-divider
                   li
-                    a.dropdown-item.text-danger href="/flock/#{flock["attributes"]["id"]}/delete" data-confirm="Are you sure you want to delete this flock?"
+                    a.dropdown-item.text-danger href="/flock/#{flock.id}/delete" data-confirm="Are you sure you want to delete this flock?"
                       i.bi.bi-trash.me-2
                       | Delete
 
         / Share Modal (outside card-body/footer but inside each card loop)
-        div.modal.fade id="shareModal-#{flock['attributes']['id']}" tabindex="-1" aria-labelledby="shareModalLabel-#{flock['attributes']['id']}" aria-hidden="true"
+        div.modal.fade id="shareModal-#{flock.id}" tabindex="-1" aria-labelledby="shareModalLabel-#{flock.id}" aria-hidden="true"
           div.modal-dialog
             div.modal-content
               div.modal-header
-                h5.modal-title id="shareModalLabel-#{flock['attributes']['id']}" Share Flock Link
+                h5.modal-title id="shareModalLabel-#{flock.id}" Share Flock Link
                 button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
               div.modal-body
                 div.mb-3
-                  label.form-label for="shareLinkInput-#{flock['attributes']['id']}" Link
-                  input.form-control id="shareLinkInput-#{flock['attributes']['id']}" type="text" readonly=true value="#{request.base_url}/flock/share/#{flock['attributes']['id']}"
+                  label.form-label for="shareLinkInput-#{flock.id}" Link
+                  input.form-control id="shareLinkInput-#{flock.id}" type="text" readonly=true value="#{request.base_url}/flock/share/#{flock.id}"
                 div.text-end
-                  button.btn.btn-primary type="button" onclick="copyShareLink('#{flock['attributes']['id']}')"
+                  button.btn.btn-primary type="button" onclick="copyShareLink('#{flock.id}')"
                     i.bi.bi-clipboard.me-1
                     | Copy Link
-
-/ Edit Message Modal (global modal for all birds)
-div.modal.fade id="editMessageModal" tabindex="-1" aria-labelledby="editMessageModalLabel" aria-hidden="true"
-  div.modal-dialog
-    div.modal-content
-      form id="editMessageForm" method="post"
-        div.modal-header
-          h5.modal-title id="editMessageModalLabel" Edit Your Message
-          button.btn-close type="button" data-bs-dismiss="modal" aria-label="Close"
-        div.modal-body
-          div.mb-3
-            label.form-label for="messageInput" Your Message
-            textarea.form-control id="messageInput" name="message" rows="3" maxlength="200" placeholder="Enter your status message..."
-            div.form-text 200 characters maximum
-        div.modal-footer
-          button.btn.btn-secondary type="button" data-bs-dismiss="modal" Cancel
-          button.btn.btn-primary type="submit"
-            i.bi.bi-check-lg.me-1
-            | Update Message
 
 / Global Create Button
 a.btn.btn-success.mb-4 href="/flock/create"
@@ -144,22 +113,4 @@ script
       } catch (err) {
         console.error("Copy failed:", err);
       }
-    }
-
-    function editMessage(birdId, flockId, currentMessage) {
-      const modal = new bootstrap.Modal(document.getElementById('editMessageModal'));
-      const form = document.getElementById('editMessageForm');
-      const messageInput = document.getElementById('messageInput');
-      
-      // Set form action to use bird_id
-      form.action = `/flock/${flockId}/bird/${birdId}/update`;
-      
-      // Set current message
-      messageInput.value = currentMessage;
-      
-      // Show modal
-      modal.show();
-      
-      // Focus on textarea
-      messageInput.focus();
     }

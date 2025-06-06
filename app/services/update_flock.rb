@@ -9,7 +9,7 @@ module Flocks
         @config = config
       end
 
-      def call(flock_id, destination_url, current_account)
+      def call(flock_id:, destination_url:, current_account:)
         response = HTTP.auth("Bearer #{current_account.auth_token}")
                        .post("#{@config.API_URL}/flocks/#{flock_id}", json: {
                                destination_url: destination_url

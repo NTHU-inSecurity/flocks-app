@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative 'app'
+require_relative './app'
 
 module Flocks
   # Web controller for Flocks API
@@ -16,7 +16,7 @@ module Flocks
       "#{url}?client_id=#{client_id}&scope=#{scope}&response_type=#{code}&redirect_uri=#{redirect_uri}"
     end
 
-    route('auth') do |routing| # rubocop:disable Metrics/BlockLength
+    route('auth') do |routing|
       @oauth_callback = '/auth/sso_callback'
       @login_route = '/auth/login'
       routing.is 'login' do
@@ -98,7 +98,7 @@ module Flocks
       end
 
       @register_route = '/auth/register'
-      routing.on 'register' do # rubocop:disable Metrics/BlockLength
+      routing.on 'register' do 
         routing.is do
           # GET /auth/register
           routing.get do
@@ -114,7 +114,7 @@ module Flocks
               routing.redirect @register_route
             end
 
-            VerifyRegistration.new(App.config).call(registration.to_h)
+            VerifyRegistration.new(App.config).call(routing.params)
 
             flash[:notice] = 'Please check your email for a verification link'
             routing.redirect '/'
@@ -122,9 +122,11 @@ module Flocks
             App.logger.warn "API server error: #{e.inspect}\n#{e.backtrace}"
             flash[:error] = 'Our servers are not responding -- please try later'
             routing.redirect @register_route
+          rescue VerifyRegistration::VerificationError => e
+            flash[:error] = e.message
+            routing.redirect @register_route
           rescue StandardError => e
-            # App.logger.error "Could not process registration: #{e.inspect}"
-            puts(e.backtrace)
+            App.logger.error "Could not process registration: #{e.inspect}"
             flash[:error] = 'Registration process failed -- please try later'
             routing.redirect @register_route
           end

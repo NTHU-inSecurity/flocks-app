@@ -5,12 +5,12 @@ div.card.mb-4.shadow-sm
     div.row.mb-3
       div.col-sm-3.fw-bold.text-muted Username:
       div.col-sm-9
-        = current_account.account_info['attributes']['username']
+        = account.username
 
     div.row.mb-3
       div.col-sm-3.fw-bold.text-muted Email:
       div.col-sm-9
-        = current_account.account_info['attributes']['email']
+        = account.email
 
 div.card.shadow-sm
   div.card-body
@@ -23,4 +23,4 @@ div.card.shadow-sm
           a href="#api_key" data-bs-toggle="collapse" aria-expanded="false" aria-controls="api_key" Show key
           div#api_key.collapse.mt-2
             div.card.card-body
-              pre.text-wrap = current_account.auth_token
+              pre.text-wrap #{account.auth_token}

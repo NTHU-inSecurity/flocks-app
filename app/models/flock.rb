@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# why am i fixing something that is not my code?? (by irina)
-
 require 'ostruct'
 
 module Flocks

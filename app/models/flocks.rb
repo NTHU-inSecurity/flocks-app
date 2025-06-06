@@ -3,7 +3,7 @@
 require_relative 'flock'
 
 module Flocks
-  # Behaviors of the currently logged in account
+  # Flocks object representing a collection of flocks
   class Flocks
     attr_reader :all
 

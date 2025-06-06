@@ -1,30 +1,30 @@
 # frozen_string_literal: true
 
 require 'roda'
-require_relative 'app'
+require_relative './app'
 
 module Flocks
-  # Web controller for Flocks API
+  # Web controller for Flocks API (map routes)
   class App < Roda
     route('map') do |routing|
       routing.on do
         # GET /map
         routing.get do
-          birds = FlocksServices::GetBirds.new(App.config).call(
+          birds_data = FlocksServices::GetBirds.new(App.config).call(
             current_account: @current_account,
             flock_id: routing.params['flock_id']
           )
 
-          # FIX: controller knows too much
-          bird = birds.find { |b| b['included']['account']['attributes']['username'] == @current_account.username }
-          current_bird = { flock_id: bird['included']['flock']['attributes']['id'],
-                           bird_id: bird['data']['attributes']['id'] }
+          puts(birds: birds_data)
+
+          birds = Birds.new(birds_data)
+
+          current_bird = birds.all.find { |b| b.account_name == @current_account.username }
 
           view :map,
                locals: { current_account: @current_account,
                          flock_id: routing.params['flock_id'],
-                         bird: current_bird,
-                         birds: birds }
+                         current_bird: current_bird }
         end
 
         # POST /map/
