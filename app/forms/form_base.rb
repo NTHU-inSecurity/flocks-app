@@ -5,10 +5,9 @@ require 'dry-validation'
 module Flocks
   # Form helpers
   module Form
-
-    GOOGLE_MAPS_URL_REGEX = %r{^https://(maps\.google\.com|maps\.app\.goo\.gl)/.+$}.freeze
-    USERNAME_REGEX = /^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*$/.freeze
-    EMAIL_REGEX = /@/.freeze
+    GOOGLE_MAPS_URL_REGEX = %r{^https://(maps\.google\.com|maps\.app\.goo\.gl)/.+$}
+    USERNAME_REGEX = /^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*$/
+    EMAIL_REGEX = /@/
 
     def self.validation_errors(validation)
       validation.errors.to_h.map { |k, v| [k, v].join(' ') }.join('; ')

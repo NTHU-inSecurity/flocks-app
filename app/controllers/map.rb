@@ -15,8 +15,6 @@ module Flocks
             flock_id: routing.params['flock_id']
           )
 
-          puts(birds: birds_data)
-
           birds = Birds.new(birds_data)
 
           current_bird = birds.all.find { |b| b.account_name == @current_account.username }

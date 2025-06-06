@@ -98,7 +98,7 @@ module Flocks
       end
 
       @register_route = '/auth/register'
-      routing.on 'register' do 
+      routing.on 'register' do
         routing.is do
           # GET /auth/register
           routing.get do

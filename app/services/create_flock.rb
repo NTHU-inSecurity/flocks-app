@@ -4,7 +4,7 @@ require 'http'
 
 module Flocks
   class FlocksServices
-    class CreateFlock 
+    class CreateFlock
       def initialize(config)
         @config = config
       end

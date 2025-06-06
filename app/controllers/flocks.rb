@@ -5,9 +5,8 @@ require_relative './app'
 
 module Flocks
   # Web controller for Flocks APP (flock routes)
-  class App < Roda 
-    route('flock') do |routing| 
-
+  class App < Roda
+    route('flock') do |routing|
       routing.redirect '/auth/login' unless @current_account.logged_in?
       @flocks_route = '/flock/all'
 
@@ -23,8 +22,8 @@ module Flocks
       routing.on 'share', String do |flock_id|
         flock_data = FlocksServices::GetFlock.new(App.config).call(current_account: @current_account,
                                                                    flock_id: flock_id)
-        flock = Flock.new(flock_data)                                                           
-                                                                   
+        flock = Flock.new(flock_data)
+
         view :share_flocks, locals: { flock: flock, current_account: @current_account }
       rescue StandardError => e
         App.logger.error "#{e.inspect}\n#{e.backtrace}"
@@ -64,7 +63,7 @@ module Flocks
           end
 
           FlocksServices::CreateFlock.new(App.config).call(
-            destination_url: form[:destination_url], 
+            destination_url: form[:destination_url],
             current_account: @current_account
           )
 
@@ -113,7 +112,7 @@ module Flocks
           end
 
           FlocksServices::UpdateFlock.new(App.config).call(
-            flock_id:, 
+            flock_id:,
             destination_url: form[:destination_url],
             current_account: @current_account
           )

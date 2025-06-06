@@ -4,7 +4,7 @@ require 'http'
 
 module Flocks
   class FlocksServices
-    class GetBirds 
+    class GetBirds
       def initialize(config)
         @api_url = config.API_URL
       end

@@ -6,8 +6,8 @@ require_relative './app'
 module Flocks
   # Web controller for Flocks API
   class App < Roda
-    route('account') do |routing| 
-      routing.on do 
+    route('account') do |routing|
+      routing.on do
         # GET /account/[username]
         routing.get String do |username|
           account = GetAccountDetails.new(App.config).call(

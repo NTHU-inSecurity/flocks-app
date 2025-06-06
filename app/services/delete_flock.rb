@@ -4,7 +4,7 @@ require 'http'
 
 module Flocks
   class FlocksServices
-    class DeleteFlock 
+    class DeleteFlock
       def initialize(config)
         @config = config
       end
@@ -14,6 +14,7 @@ module Flocks
                        .post("#{@config.API_URL}/bird/#{flock_id}")
 
         raise response.parse['message'] || 'Failed to delete or exit flock' unless response.code == 200
+
         true
       end
     end

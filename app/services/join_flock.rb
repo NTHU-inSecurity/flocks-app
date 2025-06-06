@@ -5,7 +5,7 @@ require 'http'
 module Flocks
   # this class sends request to api to add user to flock
   class FlocksServices
-    class JoinFlock 
+    class JoinFlock
       def initialize(config)
         @api_url = config.API_URL
       end
