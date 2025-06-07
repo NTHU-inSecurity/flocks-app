@@ -8,16 +8,16 @@ link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 
 / Include Faye client script
-script src="http://localhost:3000/faye/faye.js"
+script src="#{ws.ws_javascript}""
 
 script
   |
     document.addEventListener('DOMContentLoaded', () => {
       const map = L.map('map').setView([24.79, 120.98], 13);
       const userMarkers = {};
-      const channel = "#{flock_id}";
+      const channel = "#{ws.ws_channel_id}";
 
-      const client = new Faye.Client("http://localhost:3000/faye");
+      const client = new Faye.Client("#{ws.ws_route}");
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
