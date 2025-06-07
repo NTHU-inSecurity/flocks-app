@@ -21,7 +21,11 @@ describe 'Test Service Objects' do
       account_return_json = File.read('spec/fixtures/auth_account.json')
 
       WebMock.stub_request(:post, "#{Flocks::App.config.API_URL}/accounts/")
-             .with(body: @account_details)
+             .with { |req|
+               body = JSON.parse(req.body)
+               body['data'] == @account_details.transform_keys(&:to_s) &&
+                 body.key?('signature')
+             }
              .to_return(status: 201, body: account_return_json,
                         headers: { 'content-type' => 'application/json' })
 
@@ -30,7 +34,11 @@ describe 'Test Service Objects' do
 
     it 'BAD: should raise error if account creation fails' do
       WebMock.stub_request(:post, "#{Flocks::App.config.API_URL}/accounts/")
-             .with(body: @account_details)
+             .with { |req|
+               body = JSON.parse(req.body)
+               body['data'] == @account_details.transform_keys(&:to_s) &&
+                 body.key?('signature')
+             }
              .to_return(status: 422)
 
       _(proc {

@@ -13,6 +13,7 @@ describe 'Test Service Objects' do
 
     @token = 'fake_registration_token'
     @expected_url = "#{Flocks::App.config.APP_URL}/auth/register/#{@token}"
+    @request_payload = @registration_data.merge('verification_url' => @expected_url)
   end
 
   after do
@@ -23,18 +24,14 @@ describe 'Test Service Objects' do
     it 'HAPPY: should verify a registration and return parsed response' do
       expected_response = { 'message' => 'Verification sent' }
 
-      # Stub SecureMessage.encrypt to return a fake token
       SecureMessage.stub :encrypt, @token do
         WebMock.stub_request(:post, "#{Flocks::App.config.API_URL}/auth/register")
-               .with(
-                 body: @registration_data.merge('verification_url' => @expected_url)
-               )
+               .with(body: @request_payload.to_json)
                .to_return(status: 202,
                           body: expected_response.to_json,
                           headers: { 'content-type' => 'application/json' })
 
         result = Flocks::VerifyRegistration.new(Flocks::App.config).call(@registration_data.dup)
-
         _(result).must_equal expected_response
       end
     end
@@ -42,10 +39,10 @@ describe 'Test Service Objects' do
     it 'BAD: should raise VerificationError if server rejects registration' do
       SecureMessage.stub :encrypt, @token do
         WebMock.stub_request(:post, "#{Flocks::App.config.API_URL}/auth/register")
-               .with(
-                 body: @registration_data.merge('verification_url' => @expected_url)
-               )
-               .to_return(status: 400)
+               .with(body: @request_payload.to_json)
+               .to_return(status: 400,
+                          body: { error: 'Bad request' }.to_json,
+                          headers: { 'content-type' => 'application/json' })
 
         _(proc {
           Flocks::VerifyRegistration.new(Flocks::App.config).call(@registration_data.dup)
