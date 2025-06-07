@@ -12,25 +12,38 @@ module Flocks
     plugin :environments
     plugin :multi_route
 
-    FONT_SRC = %w[https://cdn.jsdelivr.net].freeze
-    SCRIPT_SRC = %w[https://cdn.jsdelivr.net].freeze
-    STYLE_SRC = %w[https://bootswatch.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com].freeze
+    FONT_SRC = %w[
+      https://cdn.jsdelivr.net
+      https://fonts.googleapis.com
+      https://fonts.gstatic.com
+    ].freeze
+
+    SCRIPT_SRC = %w[
+      https://cdn.jsdelivr.net
+      https://cdnjs.cloudflare.com
+      https://unpkg.com
+      http://localhost:3000/faye/faye.js
+    ].freeze
+
+    STYLE_SRC = %w[
+      https://bootswatch.com
+      https://cdn.jsdelivr.net
+      https://cdnjs.cloudflare.com
+      https://unpkg.com
+      https://fonts.googleapis.com
+    ].freeze
 
     configure :production do
       use Rack::SslEnforcer, hsts: true
     end
 
-    ## Uncomment to drop the login session in case of any violation
-    # use Rack::Protection, reaction: :drop_session
     use SecureHeaders::Middleware
 
     SecureHeaders::Configuration.default do |config|
       config.cookies = {
         secure: true,
         httponly: true,
-        samesite: {
-          lax: true
-        }
+        samesite: { lax: true }
       }
 
       config.x_frame_options = 'DENY'
@@ -38,29 +51,28 @@ module Flocks
       config.x_xss_protection = '1'
       config.x_permitted_cross_domain_policies = 'none'
       config.referrer_policy = 'origin-when-cross-origin'
-
-      # NOTE: single-quotes needed around 'self' and 'none' in CSPs
-      # rubocop:disable Lint/PercentStringArray
-      config.csp = {
+    
+    # Because of never-ending resource problem for map
+    # Unsafe CSP
+    config.csp = {
         report_only: false,
         preserve_schemes: true,
-        default_src: %w['self'],
-        child_src: %w['self'],
-        connect_src: %w[wws:],
-        img_src: %w['self'],
-        font_src: %w['self'] + FONT_SRC,
-        script_src: %w['self'] + SCRIPT_SRC,
-        style_src: %W['self'] + STYLE_SRC,
-        form_action: %w['self'],
-        frame_ancestors: %w['none'],
-        object_src: %w['none'],
-        report_uri: %w[/security/report_csp_violation]
-      }
-      # rubocop:enable Lint/PercentStringArray
+        default_src: %w[* data: blob:],
+        connect_src: %w[* data: blob:],
+        script_src: %w[* 'unsafe-inline' 'unsafe-eval' data: blob:],
+        script_src_attr: %w[* 'unsafe-inline' 'unsafe-eval' data: blob:],
+        script_src_elem: %w[* 'unsafe-inline' 'unsafe-eval' data: blob:],
+        style_src: %w[* 'unsafe-inline' data: blob:],
+        img_src: %w[* data: blob:],
+        font_src: %w[* data: blob:],
+        frame_ancestors: %w[*],
+        object_src: %w[*],
+        form_action: %w[*],
+        report_uri: %w[]
+    }
     end
 
     route('security') do |routing|
-      # POST security/report_csp_violation
       routing.post 'report_csp_violation' do
         App.logger.warn "CSP VIOLATION: #{request.body.read}"
       end
