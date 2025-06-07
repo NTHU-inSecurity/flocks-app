@@ -18,7 +18,9 @@ module Flocks
           birds = Birds.new(birds_data)
           ws = WebSocket.new(App.config, routing.params['flock_id'])
 
-          current_bird = birds.all.find { |b| b.account_name == @current_account.username }
+          current_bird = birds.all.find do |b|
+            b.account_name == @current_account.username && b.flock.id == routing.params['flock_id']
+          end
 
           view :map,
                locals: {

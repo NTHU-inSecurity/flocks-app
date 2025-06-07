@@ -28,6 +28,20 @@ script
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
+
+      const meetingLat = #{{current_bird.flock.latitude}};
+      const meetingLng = #{{current_bird.flock.longitude}};
+      const meetingIcon = L.icon({
+        iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+      });
+      L.marker([meetingLat, meetingLng], { icon: meetingIcon })
+        .addTo(map)
+        .bindPopup('Meeting Point')
+        .openPopup();
+
       function updateMarker(id, name, msg, lat, lng) {
         const popup = `<b>${name}</b><br>${msg}<br>`;
         if (!userMarkers[id]) {

@@ -41,14 +41,9 @@ module Flocks
     def get_sso_account_from_api(access_token)
       sso_data = { access_token: }
       signed_data = SignedMessage.sign(sso_data)
-      # test
-      puts "Sending signed data: #{signed_data.inspect}"
 
       response = HTTP.post("#{@config.API_URL}/auth/sso",
                            json: signed_data)
-      # test
-      puts "API Response: #{response.code} #{response.status}"
-      puts "API Response Body: #{response.body}"
 
       if response.code >= 400
         puts "API Error Response: #{response.body}"
@@ -61,10 +56,6 @@ module Flocks
         account: account_info['account'],
         auth_token: account_info['auth_token']
       }
-    rescue JSON::ParserError => e
-      puts "Failed to parse API response: #{e.message}"
-      puts "Response body: #{response&.body}"
-      raise 'Invalid API response format'
     end
   end
 end

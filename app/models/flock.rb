@@ -6,7 +6,7 @@ module Flocks
   # Behaviors of a flock (group) from API response
   # Represents a group with destination and members (birds)
   class Flock
-    attr_reader :id, :destination_url, :creator, :birds, :policies
+    attr_reader :id, :destination_url, :creator, :birds, :policies, :latitude, :longitude
 
     def initialize(flock_info)
       process_attributes(flock_info['attributes'])
@@ -19,6 +19,8 @@ module Flocks
     def process_attributes(attributes)
       @id = attributes['id']
       @destination_url = attributes['destination_url']
+      @latitude = attributes['latitude']
+      @longitude = attributes['longitude']
     end
 
     def process_included(included)

@@ -31,6 +31,7 @@ module Flocks
       https://cdnjs.cloudflare.com
       https://unpkg.com
       https://fonts.googleapis.com
+      https://maps.gstatic.com
     ].freeze
 
     configure :production do
@@ -51,25 +52,25 @@ module Flocks
       config.x_xss_protection = '1'
       config.x_permitted_cross_domain_policies = 'none'
       config.referrer_policy = 'origin-when-cross-origin'
-    
-    # Because of never-ending resource problem for map
-    # Unsafe CSP
-    config.csp = {
+
+      # Because of never-ending resource problem for map
+      # Unsafe CSP
+      config.csp = {
         report_only: false,
         preserve_schemes: true,
         default_src: %w[* data: blob:],
         connect_src: %w[* data: blob:],
-        script_src: %w[* 'unsafe-inline' 'unsafe-eval' data: blob:],
-        script_src_attr: %w[* 'unsafe-inline' 'unsafe-eval' data: blob:],
-        script_src_elem: %w[* 'unsafe-inline' 'unsafe-eval' data: blob:],
-        style_src: %w[* 'unsafe-inline' data: blob:],
+        script_src: %w[* unsafe-inline unsafe-eval data: blob:],
+        script_src_attr: %w[* unsafe-inline unsafe-eval data: blob:],
+        script_src_elem: %w[* unsafe-inline unsafe-eval data: blob:],
+        style_src: %w[* unsafe-inline data: blob:] + STYLE_SRC,
         img_src: %w[* data: blob:],
-        font_src: %w[* data: blob:],
+        font_src: %w[* data: blob:] + FONT_SRC,
         frame_ancestors: %w[*],
         object_src: %w[*],
         form_action: %w[*],
         report_uri: %w[]
-    }
+      }
     end
 
     route('security') do |routing|

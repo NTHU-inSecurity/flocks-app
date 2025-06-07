@@ -29,32 +29,23 @@ div class="row justify-content-center"
                 | Register
 
       - else
-        div class="col-md-4"
-          div class="card h-100 border-0 shadow-sm hover-shadow"
-            div class="card-body text-center p-4"
-              i class="fas fa-users fa-3x text-primary mb-3"
-              h5 class="card-title" My Flocks
-              p class="card-text text-muted" View and manage your existing flocks
-              a href='flock/all' class="btn btn-primary btn-lg px-4"
-                i class="fas fa-eye me-2"
-                | View Flocks
+        .row.justify-content-center
+          div class="col-md-4"
+            div class="card h-100 border-0 shadow-sm hover-shadow"
+              div class="card-body text-center p-4"
+                i class="fas fa-users fa-3x text-primary mb-3"
+                h5 class="card-title" My Flocks
+                p class="card-text text-muted" View and manage your existing flocks
+                a href='flock/all' class="btn btn-primary btn-lg px-4"
+                  i class="fas fa-eye me-2"
+                  | View Flocks
 
-        div class="col-md-4"
-          div class="card h-100 border-0 shadow-sm hover-shadow"
-            div class="card-body text-center p-4"
-              i class="fas fa-plus-circle fa-3x text-success mb-3"
-              h5 class="card-title" New Flock
-              p class="card-text text-muted" Create a new flock for your group
-              a href='flock/create' class="btn btn-success btn-lg px-4"
-                i class="fas fa-plus me-2"
-                | Create Flock
-
-        div class="col-md-4"
-          div class="card h-100 border-0 shadow-sm hover-shadow"
-            div class="card-body text-center p-4"
-              i class="fas fa-map-marked-alt fa-3x text-info mb-3"
-              h5 class="card-title" Test Map
-              p class="card-text text-muted" Explore the map functionality
-              a href='/map' class="btn btn-info btn-lg px-4"
-                i class="fas fa-map me-2"
-                | Open Map
+          div class="col-md-4"
+            div class="card h-100 border-0 shadow-sm hover-shadow"
+              div class="card-body text-center p-4"
+                i class="fas fa-plus-circle fa-3x text-success mb-3"
+                h5 class="card-title" New Flock
+                p class="card-text text-muted" Create a new flock for your group
+                a href='flock/create' class="btn btn-success btn-lg px-4"
+                  i class="fas fa-plus me-2"
+                  | Create Flock
