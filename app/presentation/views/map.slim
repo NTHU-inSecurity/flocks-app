@@ -23,6 +23,10 @@ script
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
 
       function updateMarker(id, name, msg, lat, lng) {
         const popup = `<b>${name}</b><br>${msg}<br>`;
