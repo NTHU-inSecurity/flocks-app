@@ -29,7 +29,7 @@ module Flocks
             .post(@config.GOOGLE_TOKEN_URL,
                   form: { client_id: @config.GOOGLE_CLIENT_ID,
                           client_secret: @config.GOOGLE_CLIENT_SECRET,
-                          code: code,
+                          code:,
                           grant_type: 'authorization_code',
                           redirect_uri: @config.GOOGLE_REDIRECT_URI })
 
@@ -39,8 +39,21 @@ module Flocks
     end
 
     def get_sso_account_from_api(access_token)
-      response = HTTP.post("#{@config.API_URL}/auth/sso", json: { access_token: access_token })
-      raise if response.code >= 400
+      sso_data = { access_token: }
+      signed_data = SignedMessage.sign(sso_data)
+      # test
+      puts "Sending signed data: #{signed_data.inspect}"
+
+      response = HTTP.post("#{@config.API_URL}/auth/sso",
+                           json: signed_data)
+      # test
+      puts "API Response: #{response.code} #{response.status}"
+      puts "API Response Body: #{response.body}"
+
+      if response.code >= 400
+        puts "API Error Response: #{response.body}"
+        raise "API returned error #{response.code}: #{response.body}"
+      end
 
       account_info = JSON.parse(response)['data']['attributes']
 
@@ -48,6 +61,10 @@ module Flocks
         account: account_info['account'],
         auth_token: account_info['auth_token']
       }
+    rescue JSON::ParserError => e
+      puts "Failed to parse API response: #{e.message}"
+      puts "Response body: #{response&.body}"
+      raise 'Invalid API response format'
     end
   end
 end

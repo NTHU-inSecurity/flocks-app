@@ -40,6 +40,7 @@ module Flocks
     @redis_url = ENV.delete('REDISCLOUD_URL')
     SecureMessage.setup(ENV.delete('MSG_KEY'))
     SecureSession.setup(@redis_url) # only used in dev to wipe session store
+    SignedMessage.setup(ENV.delete('SIGNING_KEY'))
 
     configure :development, :test do
       # Suppresses log info/warning outputs in dev/test environments

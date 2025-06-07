@@ -13,14 +13,96 @@ h4 {
 
 .dropdown-menu {
   margin-top: 0.5rem;
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
 .alert {
   margin-top: 1rem;
+  border: none;
+  border-radius: 0.75rem;
 }
 
 .btn {
   font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced card styling */
+.card {
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-3px);
+  transition: all 0.3s ease;
+}
+
+/* Input group enhancements */
+.input-group-text {
+  background: #f8f9fa;
+  border-right: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.form-control {
+  border-left: none;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  border-color: #86b7fe;
+}
+
+/* Navbar enhancements */
+.navbar {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  padding: 0.75rem 0;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+/* Social button styling */
+.btn-social {
+  border-radius: 0.5rem !important;
+  border: none !important;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.btn-social:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Login page specific styling */
+.vr {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    #dee2e6 25%,
+    #dee2e6 75%,
+    transparent
+  );
+}
+
+/* Icon styling */
+.fas,
+.fab {
+  margin-right: 0.25rem;
 }
 
 /* Map page custom markers */
@@ -48,13 +130,6 @@ h4 {
   transition: transform 0.2s ease;
 }
 
-/* Hover effects for cards */
-.hover-shadow:hover {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-  transform: translateY(-2px);
-  transition: all 0.3s ease;
-}
-
 /* Password confirmation styling */
 .password-match-error {
   border-color: #dc3545;
@@ -62,4 +137,26 @@ h4 {
 
 .password-match-success {
   border-color: #28a745;
+}
+
+/* Additional visual enhancements */
+.display-4 {
+  font-weight: 700;
+}
+
+.lead {
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+.text-primary {
+  color: #0d6efd !important;
+}
+
+.text-success {
+  color: #198754 !important;
+}
+
+.text-info {
+  color: #0dcaf0 !important;
 }
