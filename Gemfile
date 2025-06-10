@@ -20,12 +20,14 @@ gem 'http', '~>5.1'
 gem 'redis', '~>5.0'
 
 # Security
+gem 'dry-validation', '~>1.10'
 gem 'rack-ssl-enforcer'
 gem 'rbnacl', '~>7.1'
 gem 'secure_headers'
 
 # Encoding
 gem 'base64'
+gem 'json'
 
 # Debugging
 gem 'pry'
